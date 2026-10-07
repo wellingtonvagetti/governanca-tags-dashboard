@@ -14,6 +14,7 @@ const { createServer } = require('./server');
     assert.match(response.headers.get('content-type'), /text\/html/);
     assert.equal(response.headers.get('cache-control'), 'no-store');
     const html = await response.text();
+    assert(html.length > 5_000_000);
     assert(html.includes('id="csvFull"') && html.includes('id="csvScope"'));
     assert(html.includes('id="saveDashboard"'));
     assert.equal((await fetch(base + '/index.html')).status, 200);

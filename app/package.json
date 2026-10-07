@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "description": "Dashboard de Governança de Tags e FinOps para Azure App Service Linux",
-  "scripts": {"start": "node server.js", "test": "node server.test.js"},
+  "scripts": {"start": "node server.js", "test": "node server.test.js", "pack-dashboard": "node pack-dashboard.js"},
   "engines": {"node": ">=22 <25"}
 }

@@ -2,6 +2,18 @@
 const http = require('node:http');
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const zlib = require('node:zlib');
+const { promisify } = require('node:util');
+const gunzip = promisify(zlib.gunzip);
+
+async function readDashboard() {
+  try { return await fs.readFile(path.join(__dirname, 'index.html')); }
+  catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    const packed = await fs.readFile(path.join(__dirname, 'dashboard.html.gz.b64'), 'utf8');
+    return gunzip(Buffer.from(packed.replace(/\s+/g, ''), 'base64'));
+  }
+}
 
 function createServer() {
   return http.createServer(async (req, res) => {
@@ -23,7 +35,7 @@ function createServer() {
       return res.end(req.method === 'HEAD' ? undefined : 'Não encontrado');
     }
     try {
-      const content = await fs.readFile(path.join(__dirname, 'index.html'));
+      const content = await readDashboard();
       res.writeHead(200, {
         'Content-Type': 'text/html; charset=utf-8',
         'Content-Length': content.length
@@ -40,4 +52,4 @@ if (require.main === module) {
   const port = process.env.PORT || 8080;
   createServer().listen(port, '0.0.0.0', () => console.log('Dashboard iniciado.'));
 }
-module.exports = { createServer };
+module.exports = { createServer, readDashboard };

@@ -1,10 +1,10 @@
 # Dashboard Evertec — GitHub → Azure Web App
 
-Projeto pronto para configurar o destino e publicar. O dashboard atual fica compactado em `app/dashboard.html.gz.b64`; o servidor o descompacta ao abrir o site. Ainda não foi publicado no Azure.
+Projeto pronto para configurar o destino e publicar. O dashboard atual fica compactado em `dashboard.html.gz.b64`; o servidor o descompacta ao abrir o site. Ainda não foi publicado no Azure.
 
 ## Configuração inicial
 
-1. Use um repositório GitHub privado. Copie o conteúdo desta pasta para a raiz, preservando `app/` e `.github/workflows/`.
+1. Use um repositório GitHub privado. Copie o conteúdo desta pasta para a raiz, preservando os arquivos na raiz.
 2. Use um Azure Web App com publicação de **Código**, sistema **Linux**, runtime **Node.js 24 LTS** e comando de inicialização **npm start**. Este pacote não presume configuração de um App Service Windows, PHP ou container existente.
 3. Configure login de visitantes no App Service com Microsoft Entra ID para o público interno autorizado. O servidor deste projeto não implementa login próprio; o controle de acesso é do App Service.
 4. Configure a identidade de publicação GitHub→Azure usando OpenID Connect e credencial federada. O subject esperado pelo workflow é `repo:SEU_USUARIO/SEU_REPOSITORIO:environment:production`. O ambiente precisa se chamar `production`. A identidade precisa de permissão de publicação no Web App de destino.
@@ -28,10 +28,10 @@ O carregamento dos CSVs atualiza a página no navegador. Para disponibilizar os 
 
 1. Abra o dashboard, carregue os dois CSVs e informe a data de coleta.
 2. Clique em **Salvar dashboard atualizado**.
-3. Salve o HTML atualizado como **app/index.html** em uma cópia local do repositório.
-4. Dentro de `app/`, execute `npm run pack-dashboard`. Isso atualiza `dashboard.html.gz.b64`.
+3. Salve o HTML atualizado como **index.html** em uma cópia local do repositório.
+4. Na raiz do repositório, execute `npm run pack-dashboard`. Isso atualiza `dashboard.html.gz.b64`.
 5. Remova o `index.html` local para não duplicar os dados no commit.
-6. Faça commit de `app/dashboard.html.gz.b64`. O GitHub Actions publica a nova versão no mesmo Web App.
+6. Faça commit de `dashboard.html.gz.b64`. O GitHub Actions publica a nova versão no mesmo Web App.
 
 Esta versão não recebe nem armazena CSVs no servidor. Upload compartilhado direto pelo site exigiria uma API e armazenamento, que não fazem parte deste pacote. Os históricos ficam no HTML exportado e o compliance Policy continua sendo o valor informado anteriormente.
 

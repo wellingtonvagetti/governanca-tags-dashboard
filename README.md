@@ -1,6 +1,6 @@
 # Dashboard Evertec — GitHub → Azure Web App
 
-Projeto pronto para configurar o destino e publicar. O dashboard atual fica compactado em `dashboard.html.gz.b64`; o servidor o descompacta ao abrir o site. Ainda não foi publicado no Azure.
+O dashboard fica compactado em `dashboard.html.gz.b64`; o servidor o descompacta ao abrir o site e injeta automaticamente a fotografia mais recente gravada no Web App.
 
 ## Configuração inicial
 
@@ -19,25 +19,24 @@ Projeto pronto para configurar o destino e publicar. O dashboard atual fica comp
 
 Esses valores devem ser inseridos nas configurações do GitHub; não precisam ser enviados em conversa. Não há client secret no modelo de autenticação escolhido.
 
-6. Em GitHub → Actions → **Publicar dashboard Evertec**, execute **Run workflow** na branch main. Um commit posterior em `app/` também dispara a publicação.
+6. Em GitHub → Actions, execute o workflow de publicação na branch `main`. Commits posteriores na branch também publicam a nova versão.
 7. Ao concluir, abra a URL padrão do Web App exibida pelo Azure. `/health` deve responder `{"status":"ok"}`.
 
 ## Atualização das extrações
 
-O carregamento dos CSVs atualiza a página no navegador. Para disponibilizar os novos dados para todos:
+Na aba **Modelo Power BI**, o carregamento dos CSVs valida os arquivos no navegador e grava a fotografia processada no armazenamento persistente do App Service:
 
-1. Abra o dashboard, carregue os dois CSVs e informe a data de coleta.
-2. Clique em **Salvar dashboard atualizado**.
-3. Salve o HTML atualizado como **index.html** em uma cópia local do repositório.
-4. Na raiz do repositório, execute `npm run pack-dashboard`. Isso atualiza `dashboard.html.gz.b64`.
-5. Remova o `index.html` local para não duplicar os dados no commit.
-6. Faça commit de `dashboard.html.gz.b64`. O GitHub Actions publica a nova versão no mesmo Web App.
+1. Abra o dashboard autenticado.
+2. Entre em **Modelo Power BI**.
+3. Selecione os CSVs completo e de Governança da mesma coleta.
+4. Informe a Data de Coleta.
+5. Clique em **Gravar nova fotografia**.
 
-Esta versão não recebe nem armazena CSVs no servidor. Upload compartilhado direto pelo site exigiria uma API e armazenamento, que não fazem parte deste pacote. Os históricos ficam no HTML exportado e o compliance Policy continua sendo o valor informado anteriormente.
+O Web App grava somente a fotografia processada, não os CSVs brutos, em `/home/data/governanca-tags-dashboard`. Cada coleta gera um arquivo compactado e metadados auditáveis; `latest.txt` aponta para a versão exibida a todos. O histórico aparece nas abas **Evolução da Governança** e **Modelo Power BI**. Para usar outro armazenamento, defina `DASHBOARD_DATA_DIR`.
 
 ## Teste local opcional
 
-Na pasta `app`, com Node.js 22 ou 24 instalado:
+Na raiz do repositório, com Node.js 22 ou 24 instalado:
 
 ```sh
 npm test

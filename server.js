@@ -60,10 +60,11 @@ function summarize(snapshot) {
         ? ids.filter(i => value(name, i) !== null && value(name, i) !== 'INDEFINIDO').length : filled;
       return { filled, classified, total };
     };
+    const tagNames = ['AMBIENTE', 'BU', 'CAPEX', 'CC', 'CCOWNER', 'CLIENTE', 'PRODUTO', 'FOLIO'];
     return {
       resources: total, subscriptions: new Set(ids.map(i => r.s[i])).size,
       resourceGroups: new Set(ids.map(i => r.g[i])).size,
-      tags: { CLIENTE: tag('CLIENTE'), PRODUTO: tag('PRODUTO') }
+      tags: Object.fromEntries(tagNames.map(name => [name, tag(name)]))
     };
   };
   return Object.fromEntries(Object.entries(scopes).map(([name, ids]) => [name, one(ids)]));
@@ -140,6 +141,41 @@ async function saveSnapshot(dir, snapshot, req) {
   return metadata;
 }
 
+async function deleteSnapshot(dir, id) {
+  if (id === 'baseline') throw Object.assign(new Error('O baseline do deploy não pode ser excluído'), { status: 400 });
+  if (!/^[a-zA-Z0-9._-]+$/.test(id)) throw Object.assign(new Error('Identificador de fotografia inválido'), { status: 400 });
+  const metaFile = path.join(dir, `${id}.meta.json`), dataFile = path.join(dir, `${id}.json.gz`);
+  try { await fs.access(metaFile); await fs.access(dataFile); }
+  catch { throw Object.assign(new Error('Fotografia não encontrada'), { status: 404 }); }
+  await fs.unlink(metaFile); await fs.unlink(dataFile);
+  let current = null;
+  try { current = (await fs.readFile(path.join(dir, 'latest.txt'), 'utf8')).trim(); } catch {}
+  if (current === id) {
+    const remaining = (await listStored(dir, embeddedSnapshot(await readDashboard())))
+      .filter(item => !item.baseline).sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt)));
+    if (remaining.length) await atomicWrite(path.join(dir, 'latest.txt'), remaining[0].id);
+    else await fs.rm(path.join(dir, 'latest.txt'), { force: true });
+  }
+}
+
+async function readGovernanceConfig(dir) {
+  try { return JSON.parse(await fs.readFile(path.join(dir, 'governance-config.json'), 'utf8')); }
+  catch (error) { if (error.code === 'ENOENT') return { officialMap: [], actions: [] }; throw error; }
+}
+
+async function saveGovernanceConfig(dir, config, req) {
+  const officialMap = Array.isArray(config?.officialMap) ? config.officialMap.slice(0, 5000) : [];
+  const actions = Array.isArray(config?.actions) ? config.actions.slice(0, 1000) : [];
+  const clean = {
+    officialMap: officialMap.map(x => ({ CC: String(x.CC || '').trim(), BU: String(x.BU || '').trim(), CCOWNER: String(x.CCOWNER || '').trim() })).filter(x => x.CC && x.BU),
+    actions: actions.map(x => ({ id: String(x.id || ''), date: String(x.date || ''), action: String(x.action || '').slice(0, 160), scope: String(x.scope || '').slice(0, 160), processed: Number(x.processed) || 0, success: Number(x.success) || 0, failure: Number(x.failure) || 0, responsible: String(x.responsible || '').slice(0, 160), evidence: String(x.evidence || '').slice(0, 500), savedBy: String(x.savedBy || userName(req)).slice(0, 200) })).filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x.date) && x.action),
+    updatedAt: new Date().toISOString(), updatedBy: userName(req)
+  };
+  await fs.mkdir(dir, { recursive: true });
+  await atomicWrite(path.join(dir, 'governance-config.json'), JSON.stringify(clean, null, 2));
+  return clean;
+}
+
 function json(res, status, payload, head = false) {
   const body = Buffer.from(JSON.stringify(payload));
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Length': body.length });
@@ -161,8 +197,16 @@ function createServer(options = {}) {
         return json(res, 200, { snapshots: await listStored(dir, baseline) });
       if (pathname === '/api/snapshots' && req.method === 'POST')
         return json(res, 201, { ok: true, snapshot: await saveSnapshot(dir, (await readBody(req)).snapshot, req) });
+      if (pathname.startsWith('/api/snapshots/') && req.method === 'DELETE') {
+        await deleteSnapshot(dir, decodeURIComponent(pathname.slice('/api/snapshots/'.length)));
+        return json(res, 200, { ok: true });
+      }
+      if (pathname === '/api/governance-config' && req.method === 'GET')
+        return json(res, 200, await readGovernanceConfig(dir));
+      if (pathname === '/api/governance-config' && req.method === 'PUT')
+        return json(res, 200, await saveGovernanceConfig(dir, await readBody(req), req));
       if (!['GET', 'HEAD'].includes(req.method)) {
-        res.writeHead(405, { Allow: 'GET, HEAD, POST' }); return res.end('Método não permitido');
+        res.writeHead(405, { Allow: 'GET, HEAD, POST, PUT, DELETE' }); return res.end('Método não permitido');
       }
       if (!['/', '/index.html'].includes(pathname)) {
         res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });

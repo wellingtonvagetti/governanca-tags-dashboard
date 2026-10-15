@@ -89,9 +89,51 @@
   const icon=(name,cls='')=>`<img class="azure-icon ${cls}" src="${iconBase+name}" alt="">`;
 
   document.body.classList.add('scope-v2');
+  const headerRow=document.querySelector('.top .hrow');
+  const oldBrandMark=document.querySelector('.evertec-mark');
+  if(oldBrandMark)oldBrandMark.remove();
+  if(headerRow){
+    headerRow.insertAdjacentHTML('afterbegin',`<div class="partner-brand" aria-label="Solo Network e Evertec">
+      <span class="partner-logo-slot solo-slot"><img id="soloThemeLogo" src="/assets/solo-black.png" alt="Solo Network"></span>
+      <span class="partner-amp" aria-hidden="true">&amp;</span>
+      <span class="partner-logo-slot evertec-slot"><img id="evertecThemeLogo" src="/assets/evertec-white.png" alt="Evertec"></span>
+    </div>`);
+    const meta=headerRow.querySelector('.meta');
+    if(meta){
+      const tools=document.createElement('div');tools.className='header-tools';tools.setAttribute('aria-label','Controles de visualização');
+      tools.innerHTML='<button type="button" class="header-tool" id="themeBtn" title="Alternar tema claro e escuro">DARK</button><button type="button" class="header-tool" id="fontBtn" title="Alternar tamanho da fonte">FONTE: NORMAL</button>';
+      const presentation=$('presentationBtn'),print=$('printBtn');
+      if(presentation){presentation.className='header-tool';presentation.textContent='APRESENTAR';tools.appendChild(presentation)}
+      if(print){print.className='header-tool';print.textContent='PDF';tools.appendChild(print)}
+      meta.insertBefore(tools,meta.firstChild);
+    }
+  }
+
+  const themeBtn=$('themeBtn'),fontBtn=$('fontBtn'),soloLogo=$('soloThemeLogo'),evertecLogo=$('evertecThemeLogo');
+  function applyTheme(theme){
+    const dark=theme==='dark';document.body.classList.toggle('dark-theme',dark);
+    soloLogo.src=dark?'/assets/solo-white.png':'/assets/solo-black.png';
+    evertecLogo.src=dark?'/assets/evertec-dark.png':'/assets/evertec-white.png';
+    themeBtn.textContent=dark?'LIGHT':'DARK';themeBtn.setAttribute('aria-pressed',String(dark));
+    try{localStorage.setItem('governanca-theme',dark?'dark':'light')}catch(_){ }
+  }
+  let savedTheme='light';try{savedTheme=localStorage.getItem('governanca-theme')||'light'}catch(_){ }
+  applyTheme(savedTheme);themeBtn.addEventListener('click',()=>applyTheme(document.body.classList.contains('dark-theme')?'light':'dark'));
+
+  const fontModes=[['font-normal','FONTE: NORMAL'],['font-large','FONTE: GRANDE'],['font-xlarge','FONTE: EXTRA GRANDE']];
+  let fontIndex=0;try{fontIndex=Math.max(0,Math.min(2,+localStorage.getItem('governanca-font')||0))}catch(_){ }
+  function applyFont(){document.body.classList.remove(...fontModes.map(x=>x[0]));document.body.classList.add(fontModes[fontIndex][0]);fontBtn.textContent=fontModes[fontIndex][1];try{localStorage.setItem('governanca-font',String(fontIndex))}catch(_){ }syncHeaderHeight()}
+  fontBtn.addEventListener('click',()=>{fontIndex=(fontIndex+1)%fontModes.length;applyFont()});
+
   const syncHeaderHeight=()=>document.documentElement.style.setProperty('--header-height',`${document.querySelector('.top')?.offsetHeight||0}px`);
   new ResizeObserver(syncHeaderHeight).observe(document.querySelector('.top'));
   syncHeaderHeight();
+  applyFont();
+  const presentationBtn=$('presentationBtn');
+  if(presentationBtn){
+    const syncPresentation=()=>{const active=!!document.fullscreenElement;document.body.classList.toggle('presentation-mode',active);presentationBtn.textContent=active?'SAIR':'APRESENTAR';presentationBtn.setAttribute('aria-pressed',String(active));syncHeaderHeight()};
+    document.addEventListener('fullscreenchange',syncPresentation);syncPresentation();
+  }
   const evidence=document.querySelector('.evidence-strip');
   if(evidence){evidence.children[0].innerHTML='<b>Recursos elegíveis de Governança</b> · mg-evertecbrasil';evidence.children[1].textContent='Subscriptions corporativas e recursos observados são universos separados';}
 

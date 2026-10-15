@@ -94,7 +94,7 @@
   if(oldBrandMark)oldBrandMark.remove();
   if(headerRow){
     headerRow.insertAdjacentHTML('afterbegin',`<div class="partner-brand" aria-label="Solo Network e Evertec">
-      <span class="partner-logo-slot solo-slot"><img id="soloThemeLogo" src="/assets/solo-black.png" alt="Solo Network"></span>
+      <span class="partner-logo-slot solo-slot"><img id="soloThemeLogo" src="/assets/solo-white.png" alt="Solo Network"></span>
       <span class="partner-amp" aria-hidden="true">&amp;</span>
       <span class="partner-logo-slot evertec-slot"><img id="evertecThemeLogo" src="/assets/evertec-white.png" alt="Evertec"></span>
     </div>`);
@@ -112,8 +112,8 @@
   const themeBtn=$('themeBtn'),fontBtn=$('fontBtn'),soloLogo=$('soloThemeLogo'),evertecLogo=$('evertecThemeLogo');
   function applyTheme(theme){
     const dark=theme==='dark';document.body.classList.toggle('dark-theme',dark);
-    soloLogo.src=dark?'/assets/solo-white.png':'/assets/solo-black.png';
-    evertecLogo.src=dark?'/assets/evertec-dark.png':'/assets/evertec-white.png';
+    soloLogo.src='/assets/solo-white.png';
+    evertecLogo.src='/assets/evertec-white.png';
     themeBtn.textContent=dark?'LIGHT':'DARK';themeBtn.setAttribute('aria-pressed',String(dark));
     try{localStorage.setItem('governanca-theme',dark?'dark':'light')}catch(_){ }
   }

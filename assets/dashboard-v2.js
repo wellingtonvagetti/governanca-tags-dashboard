@@ -128,5 +128,6 @@
 
   const originalLoad=loadGovernanceConfig;
   loadGovernanceConfig=async function(){await originalLoad();detailOptions();render()};
-  detailOptions();render();setTimeout(()=>{detailOptions();render()},600);
+  detailOptions();render();
+  fetch('/api/governance-config').then(response=>response.ok?response.json():null).then(config=>{if(config){governanceConfig=config;detailOptions();render()}}).catch(()=>{});
 })();

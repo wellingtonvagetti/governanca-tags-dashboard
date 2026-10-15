@@ -159,16 +159,37 @@ async function deleteSnapshot(dir, id) {
 }
 
 async function readGovernanceConfig(dir) {
-  try { return JSON.parse(await fs.readFile(path.join(dir, 'governance-config.json'), 'utf8')); }
-  catch (error) { if (error.code === 'ENOENT') return { officialMap: [], actions: [] }; throw error; }
+  try {
+    const config = JSON.parse(await fs.readFile(path.join(dir, 'governance-config.json'), 'utf8'));
+    if (!Array.isArray(config.subscriptions) || !config.subscriptions.length) {
+      try { config.subscriptions = JSON.parse(await fs.readFile(path.join(__dirname, 'subscriptions-master.json'), 'utf8')); }
+      catch { config.subscriptions = []; }
+    }
+    return config;
+  }
+  catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    try {
+      const subscriptions = JSON.parse(await fs.readFile(path.join(__dirname, 'subscriptions-master.json'), 'utf8'));
+      return { officialMap: [], actions: [], subscriptions };
+    } catch { return { officialMap: [], actions: [], subscriptions: [] }; }
+  }
 }
 
 async function saveGovernanceConfig(dir, config, req) {
   const officialMap = Array.isArray(config?.officialMap) ? config.officialMap.slice(0, 5000) : [];
   const actions = Array.isArray(config?.actions) ? config.actions.slice(0, 1000) : [];
+  const subscriptions = Array.isArray(config?.subscriptions) ? config.subscriptions.slice(0, 500) : [];
   const clean = {
     officialMap: officialMap.map(x => ({ CC: String(x.CC || '').trim(), BU: String(x.BU || '').trim(), CCOWNER: String(x.CCOWNER || '').trim() })).filter(x => x.CC && x.BU),
     actions: actions.map(x => ({ id: String(x.id || ''), date: String(x.date || ''), action: String(x.action || '').slice(0, 160), scope: String(x.scope || '').slice(0, 160), processed: Number(x.processed) || 0, success: Number(x.success) || 0, failure: Number(x.failure) || 0, responsible: String(x.responsible || '').slice(0, 160), evidence: String(x.evidence || '').slice(0, 500), savedBy: String(x.savedBy || userName(req)).slice(0, 200) })).filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x.date) && x.action),
+    subscriptions: subscriptions.map(x => ({
+      name: String(x.name || '').trim().slice(0, 240),
+      id: String(x.id || '').trim().toLowerCase().slice(0, 80),
+      managementGroup: String(x.managementGroup || '').trim().slice(0, 240),
+      status: String(x.status || '').trim().slice(0, 40),
+      inScope: x.inScope === true
+    })).filter(x => x.name && /^[0-9a-f-]{36}$/.test(x.id)),
     updatedAt: new Date().toISOString(), updatedBy: userName(req)
   };
   await fs.mkdir(dir, { recursive: true });
@@ -205,6 +226,18 @@ function createServer(options = {}) {
         return json(res, 200, await readGovernanceConfig(dir));
       if (pathname === '/api/governance-config' && req.method === 'PUT')
         return json(res, 200, await saveGovernanceConfig(dir, await readBody(req), req));
+      if (pathname.startsWith('/assets/') && ['GET', 'HEAD'].includes(req.method)) {
+        const relative = pathname.slice(1);
+        if (!/^[a-zA-Z0-9_./-]+$/.test(relative) || relative.includes('..')) {
+          res.writeHead(400); return res.end('Endereço inválido');
+        }
+        try {
+          const file = await fs.readFile(path.join(__dirname, relative));
+          const type = relative.endsWith('.svg') ? 'image/svg+xml' : relative.endsWith('.css') ? 'text/css; charset=utf-8' : 'application/javascript; charset=utf-8';
+          res.writeHead(200, { 'Content-Type': type, 'Content-Length': file.length, 'Cache-Control': 'public, max-age=3600' });
+          return res.end(req.method === 'HEAD' ? undefined : file);
+        } catch (error) { if (error.code !== 'ENOENT') throw error; res.writeHead(404); return res.end('Não encontrado'); }
+      }
       if (!['GET', 'HEAD'].includes(req.method)) {
         res.writeHead(405, { Allow: 'GET, HEAD, POST, PUT, DELETE' }); return res.end('Método não permitido');
       }
@@ -228,3 +261,4 @@ if (require.main === module) {
   createServer().listen(port, '0.0.0.0', () => console.log('Dashboard iniciado com histórico persistente.'));
 }
 module.exports = { createServer, readDashboard, summarize, injectSnapshot };
+

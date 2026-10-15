@@ -24,15 +24,20 @@ Esses valores devem ser inseridos nas configurações do GitHub; não precisam s
 
 ## Atualização das extrações
 
-Na aba **Modelo Power BI**, o carregamento dos CSVs valida os arquivos no navegador e grava a fotografia processada no armazenamento persistente do App Service:
+Na aba **Modelo Power BI**, o carregamento valida os arquivos no navegador e grava a fotografia processada no armazenamento persistente do App Service. O dashboard trabalha com um único universo operacional: **recursos elegíveis da Governança**.
 
 1. Abra o dashboard autenticado.
 2. Entre em **Modelo Power BI**.
-3. Selecione os CSVs completo e de Governança da mesma coleta.
-4. Informe a Data de Coleta.
-5. Clique em **Gravar nova fotografia**.
+3. Selecione o CSV de recursos elegíveis da Governança.
+4. Opcionalmente, selecione o cadastro corporativo de subscriptions quando ele tiver sido alterado.
+5. Informe a Data de Coleta.
+6. Clique em **Gravar nova fotografia**.
 
-O Web App grava somente a fotografia processada, não os CSVs brutos, em `/home/data/governanca-tags-dashboard`. Cada coleta gera um arquivo compactado e metadados auditáveis; `latest.txt` aponta para a versão exibida a todos. O histórico aparece nas abas **Evolução da Governança** e **Modelo Power BI**. Para usar outro armazenamento, defina `DASHBOARD_DATA_DIR`.
+O cadastro de subscriptions usa as colunas `SUBSCRIPTION NAME`, `SUBSCRIPTION ID`, `PARENT MANAGEMENT GROUP`, `STATUS` e `Management Group (mg-evertecbrasil)?`. Ele permite diferenciar o total corporativo, as assinaturas ativas no escopo e as que efetivamente possuem recursos elegíveis na fotografia.
+
+O Web App grava somente a fotografia processada, não os CSVs brutos, em `/home/data/governanca-tags-dashboard`. Cada coleta gera um arquivo compactado e metadados auditáveis; `latest.txt` aponta para a versão exibida a todos. O cadastro de subscriptions, o mapa oficial e as ações registradas ficam em `governance-config.json`. O histórico aparece nas abas **Evolução da Governança** e **Modelo Power BI**. Para usar outro armazenamento, defina `DASHBOARD_DATA_DIR`.
+
+Fotografias antigas, criadas com o modelo de dois CSVs, continuam disponíveis no histórico. As novas fotografias usam somente o CSV de recursos elegíveis.
 
 ## Teste local opcional
 
@@ -52,3 +57,4 @@ Abra http://localhost:8080 . Em Azure, a aplicação respeita a porta definida p
 - Autenticação do App Service: https://learn.microsoft.com/azure/app-service/overview-authentication-authorization
 
 Antes de integrar em um repositório existente, conferir a estrutura e outros workflows para preservar as aplicações que já estiverem nele.
+

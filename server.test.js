@@ -15,7 +15,7 @@ const { createServer } = require('./server');
     const response = await fetch(base + '/');
     assert.equal(response.status, 200); assert.match(response.headers.get('content-type'), /text\/html/);
     const html = await response.text(); assert(html.length > 5_000_000);
-    assert(html.includes('id="csvFull"') && html.includes('id="csvScope"'));
+    assert(html.includes('id="csvFull"') && html.includes('/assets/dashboard-v2.js'));
     assert(html.indexOf('id="csvFull"') > html.indexOf('id="p-pbi"'));
     assert(html.includes('id="snapshotHistory"') && html.includes('id="snapshotEvolution"'));
     const initial = await (await fetch(base + '/api/snapshots')).json();
@@ -28,6 +28,12 @@ const { createServer } = require('./server');
     const refreshed = await (await fetch(base + '/')).text();
     assert(refreshed.includes('"date":"2026-10-08"')); assert(refreshed.includes('"fullFile":"completo.csv"'));
     assert.deepEqual(await (await fetch(base + '/health')).json(), { status: 'ok', persistence: dataDir });
+    const asset = await fetch(base + '/assets/dashboard-v2.js');
+    assert.equal(asset.status, 200); assert.match(asset.headers.get('content-type'), /javascript/);
+    const config = await (await fetch(base + '/api/governance-config')).json();
+    assert.equal(config.subscriptions.length, 61);
+    const savedConfig = await fetch(base + '/api/governance-config', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config) });
+    assert.equal(savedConfig.status, 200); assert.equal((await savedConfig.json()).subscriptions.length, 61);
     assert.equal((await fetch(base + '/server.js')).status, 404);
     assert.equal((await fetch(base + '/', { method: 'POST' })).status, 405);
     console.log('OK: dashboard, persistência, histórico, injeção da última coleta e rotas HTTP.');
@@ -36,3 +42,4 @@ const { createServer } = require('./server');
     await fs.rm(dataDir, { recursive: true, force: true });
   }
 })().catch(error => { console.error(error); process.exitCode = 1; });
+

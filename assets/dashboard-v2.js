@@ -5,16 +5,77 @@
   const iconBase='/assets/azure-icons/';
   const iconMap=[
     ['microsoft.compute/virtualmachines','virtual-machine.svg'],
+    ['microsoft.compute/virtualmachines/extensions','extension.svg'],
+    ['microsoft.compute/virtualmachinescalesets','vm-scale-set.svg'],
+    ['microsoft.compute/disks','disk.svg'],
+    ['microsoft.compute/snapshots','snapshot.svg'],
+    ['microsoft.compute/availabilitysets','availability-set.svg'],
+    ['microsoft.compute/restorepointcollections','restore-point.svg'],
+    ['microsoft.compute/images','image.svg'],
+    ['microsoft.compute/galleries','compute-gallery.svg'],
+    ['microsoft.compute/galleries/images','compute-gallery.svg'],
+    ['microsoft.compute/sshpublickeys','ssh-key.svg'],
     ['microsoft.storage/storageaccounts','storage-account.svg'],
     ['microsoft.containerservice/managedclusters','kubernetes-service.svg'],
+    ['microsoft.containerregistry/registries','container-registry.svg'],
+    ['microsoft.containerregistry/registries/replications','container-registry.svg'],
+    ['microsoft.containerinstance/containergroups','container-instance.svg'],
+    ['microsoft.app/containerapps','container-app.svg'],
+    ['microsoft.app/managedenvironments','container-app.svg'],
     ['microsoft.sql/servers/databases','sql-database.svg'],
+    ['microsoft.sql/servers','sql-server.svg'],
     ['microsoft.sqlvirtualmachine/sqlvirtualmachines','sql-database.svg'],
+    ['microsoft.dbforpostgresql/flexibleservers','postgresql.svg'],
+    ['microsoft.cache/redis','redis.svg'],
+    ['microsoft.cache/redisenterprise','redis.svg'],
     ['microsoft.web/sites','app-service.svg'],
+    ['microsoft.web/serverfarms','app-service.svg'],
     ['microsoft.keyvault/vaults','key-vault.svg'],
+    ['microsoft.keyvault/managedhsms','key-vault.svg'],
     ['microsoft.network/virtualnetworks','virtual-network.svg'],
-    ['microsoft.network/privateendpoints','private-endpoint.svg']
+    ['microsoft.network/privateendpoints','private-endpoint.svg'],
+    ['microsoft.network/networkinterfaces','network-interface.svg'],
+    ['microsoft.network/networksecuritygroups','network-security-group.svg'],
+    ['microsoft.network/publicipaddresses','public-ip.svg'],
+    ['microsoft.network/routetables','route-table.svg'],
+    ['microsoft.network/loadbalancers','load-balancer.svg'],
+    ['microsoft.network/applicationgateways','application-gateway.svg'],
+    ['microsoft.network/applicationgatewaywebapplicationfirewallpolicies','waf-policy.svg'],
+    ['microsoft.network/privatednszones','private-dns.svg'],
+    ['microsoft.network/privatednszones/virtualnetworklinks','private-dns.svg'],
+    ['microsoft.network/networkwatchers','network-watcher.svg'],
+    ['microsoft.network/bastionhosts','bastion.svg'],
+    ['microsoft.network/expressroutecircuits','express-route.svg'],
+    ['microsoft.network/connections','connection.svg'],
+    ['microsoft.network/virtualnetworkgateways','virtual-network-gateway.svg'],
+    ['microsoft.eventhub/namespaces','event-hub.svg'],
+    ['microsoft.servicebus/namespaces','service-bus.svg'],
+    ['microsoft.operationalinsights/workspaces','log-analytics.svg'],
+    ['microsoft.operationalinsights/querypacks','log-analytics.svg'],
+    ['microsoft.operationsmanagement/solutions','solution.svg'],
+    ['microsoft.insights/components','application-insights.svg'],
+    ['microsoft.insights/actiongroups','alerts.svg'],
+    ['microsoft.insights/metricalerts','alerts.svg'],
+    ['microsoft.insights/scheduledqueryrules','alerts.svg'],
+    ['microsoft.insights/activitylogalerts','alerts.svg'],
+    ['microsoft.alertsmanagement/smartdetectoralertrules','alerts.svg'],
+    ['microsoft.insights/autoscalesettings','monitor.svg'],
+    ['microsoft.insights/datacollectionrules','monitor.svg'],
+    ['microsoft.insights/datacollectionendpoints','monitor.svg'],
+    ['microsoft.recoveryservices/vaults','recovery-vault.svg'],
+    ['microsoft.dataprotection/backupvaults','backup-vault.svg'],
+    ['microsoft.managedidentity/userassignedidentities','managed-identity.svg'],
+    ['microsoft.automation/automationaccounts','automation.svg'],
+    ['microsoft.automation/automationaccounts/runbooks','automation.svg'],
+    ['microsoft.resourcegraph/queries','resource-graph.svg'],
+    ['microsoft.portal/dashboards','dashboard.svg'],
+    ['microsoft.hybridcompute/machines','arc-machine.svg'],
+    ['microsoft.hybridcompute/machines/extensions','azure-arc.svg'],
+    ['microsoft.azurearcdata/sqlserverinstances','azure-arc.svg'],
+    ['microsoft.azurearcdata/sqlserverinstances/databases','azure-arc.svg'],
+    ['microsoft.migrate/movecollections','migration.svg']
   ];
-  const resourceIcon=type=>iconBase+(iconMap.find(([key])=>String(type||'').toLowerCase()===key)?.[1]||'resource-group.svg');
+  const resourceIcon=type=>iconBase+(iconMap.find(([key])=>String(type||'').toLowerCase()===key)?.[1]||'all-resources.svg');
   const typeLabel=type=>({
     'microsoft.compute/virtualmachines':'Máquina Virtual','microsoft.storage/storageaccounts':'Storage Account',
     'microsoft.containerservice/managedclusters':'Kubernetes Service','microsoft.sql/servers/databases':'SQL Database',
@@ -28,6 +89,9 @@
   const icon=(name,cls='')=>`<img class="azure-icon ${cls}" src="${iconBase+name}" alt="">`;
 
   document.body.classList.add('scope-v2');
+  const syncHeaderHeight=()=>document.documentElement.style.setProperty('--header-height',`${document.querySelector('.top')?.offsetHeight||0}px`);
+  new ResizeObserver(syncHeaderHeight).observe(document.querySelector('.top'));
+  syncHeaderHeight();
   const evidence=document.querySelector('.evidence-strip');
   if(evidence){evidence.children[0].innerHTML='<b>Recursos elegíveis de Governança</b> · mg-evertecbrasil';evidence.children[1].textContent='Subscriptions corporativas e recursos observados são universos separados';}
 

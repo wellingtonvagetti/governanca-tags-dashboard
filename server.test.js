@@ -14,6 +14,7 @@ const { createServer } = require('./server');
   try {
     const response = await fetch(base + '/');
     assert.equal(response.status, 200); assert.match(response.headers.get('content-type'), /text\/html/);
+    assert.equal(response.headers.get('content-encoding'), 'gzip');
     const html = await response.text(); assert(html.length > 5_000_000);
     assert(html.includes('id="csvFull"') && html.includes('/assets/dashboard-v2.js'));
     assert(html.indexOf('id="csvFull"') > html.indexOf('id="p-pbi"'));
@@ -30,6 +31,7 @@ const { createServer } = require('./server');
     assert.deepEqual(await (await fetch(base + '/health')).json(), { status: 'ok', persistence: dataDir });
     const asset = await fetch(base + '/assets/dashboard-v2.js');
     assert.equal(asset.status, 200); assert.match(asset.headers.get('content-type'), /javascript/);
+    assert.match(asset.headers.get('cache-control'), /immutable/);
     const config = await (await fetch(base + '/api/governance-config')).json();
     assert.equal(config.subscriptions.length, 61);
     const savedConfig = await fetch(base + '/api/governance-config', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config) });

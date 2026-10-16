@@ -234,7 +234,7 @@ function createServer(options = {}) {
         try {
           const file = await fs.readFile(path.join(__dirname, relative));
           const type = relative.endsWith('.svg') ? 'image/svg+xml' : relative.endsWith('.css') ? 'text/css; charset=utf-8' : 'application/javascript; charset=utf-8';
-          res.writeHead(200, { 'Content-Type': type, 'Content-Length': file.length, 'Cache-Control': 'no-cache, must-revalidate' });
+          res.writeHead(200, { 'Content-Type': type, 'Content-Length': file.length, 'Cache-Control': 'public, max-age=31536000, immutable' });
           return res.end(req.method === 'HEAD' ? undefined : file);
         } catch (error) { if (error.code !== 'ENOENT') throw error; res.writeHead(404); return res.end('Não encontrado'); }
       }
@@ -246,7 +246,13 @@ function createServer(options = {}) {
         return res.end(req.method === 'HEAD' ? undefined : 'Não encontrado');
       }
       const content = injectSnapshot(dashboard, await latestSnapshot(dir, baseline));
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': content.length });
+      const acceptsGzip = /(?:^|,|\s)gzip(?:\s*;|,|$)/i.test(String(req.headers['accept-encoding'] || ''));
+      if (acceptsGzip) {
+        const packed = await gzip(content, { level: 6 });
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Encoding': 'gzip', 'Content-Length': packed.length, 'Vary': 'Accept-Encoding' });
+        return res.end(req.method === 'HEAD' ? undefined : packed);
+      }
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': content.length, 'Vary': 'Accept-Encoding' });
       res.end(req.method === 'HEAD' ? undefined : content);
     } catch (error) {
       console.error(error);

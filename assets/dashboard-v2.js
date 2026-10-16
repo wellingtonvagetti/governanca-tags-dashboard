@@ -368,4 +368,5 @@
   loadGovernanceConfig=async function(){await originalLoad();detailOptions();render()};
   refreshGlobalFilterOptions();detailOptions();render();
   fetch('/api/governance-config').then(response=>response.ok?response.json():null).then(config=>{if(config){governanceConfig=config;detailOptions();render()}}).catch(()=>{});
+  requestAnimationFrame(()=>document.body.classList.remove('v2-loading'));
 })();

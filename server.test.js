@@ -4,7 +4,7 @@ const { once } = require('node:events');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
-const { createServer } = require('./server');
+const { createServer, normalizeEligibility } = require('./server');
 
 (async () => {
   const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'evertec-dashboard-'));
@@ -26,6 +26,9 @@ const { createServer } = require('./server');
     const initial = await (await fetch(base + '/api/snapshots')).json();
     assert.equal(initial.snapshots.length, 1); assert.equal(initial.snapshots[0].id, 'baseline');
     const embedded = JSON.parse(html.match(/<script id="data" type="application\/json">([\s\S]*?)<\/script>/)[1]);
+    const migration = {meta:{eligibilityApplied:false},dict:{CLASSE_INVENTARIO:['ELEGIVEL_OPERACIONAL','EXCLUIDO_REGRA_ATUAL']},subs:[{inScope:true},{inScope:true}],R:{id:['a','b','c'],s:[0,1,0],g:[0,1,2],CLASSE_INVENTARIO:[0,1,0],BU:[0,1,0]}};
+    const migrated = normalizeEligibility(migration);
+    assert.deepEqual(migrated.R.id,['a','c']);assert.equal(migrated.meta.eligibilityApplied,true);assert.equal(migrated.meta.eligibilityRecoveredFromInventoryClass,true);assert.equal(migrated.subs[1].inScope,false);
     embedded.meta.date = '2026-10-08'; embedded.meta.fullFile = 'completo.csv'; embedded.meta.scopeFile = 'governanca.csv';
     const save = await fetch(base + '/api/snapshots', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-ms-client-principal-name': 'teste@evertec' }, body: JSON.stringify({ snapshot: embedded }) });
     assert.equal(save.status, 201); const saved = await save.json(); assert(saved.ok); assert.equal(saved.snapshot.savedBy, 'teste@evertec');

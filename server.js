@@ -41,6 +41,26 @@ function injectSnapshot(html, snapshot) {
   ));
 }
 
+// Corrige fotografias 2.4 gravadas por uma versão antiga do front-end que marcou
+// todo o inventário como escopo. A classe vem do mesmo case KQL que produz
+// ELEGIVEL_GOVERNANCA e é usada somente para recuperar essa fotografia inválida.
+function normalizeEligibility(snapshot) {
+  const r = snapshot?.R || {}, dict = snapshot?.dict || {}, total = Array.isArray(r.id) ? r.id.length : 0;
+  if (!total || snapshot.meta?.eligibilityApplied !== false || !Array.isArray(r.CLASSE_INVENTARIO)) return snapshot;
+  const classes = dict.CLASSE_INVENTARIO || [], eligibleValue = classes.indexOf('ELEGIVEL_OPERACIONAL');
+  if (eligibleValue < 0) return snapshot;
+  const keep = Array.from({ length: total }, (_, i) => i).filter(i => r.CLASSE_INVENTARIO[i] === eligibleValue);
+  if (!keep.length || keep.length === total) return snapshot;
+  const normalized = structuredClone(snapshot);
+  for (const [key, values] of Object.entries(normalized.R))
+    if (Array.isArray(values) && values.length === total) normalized.R[key] = keep.map(i => values[i]);
+  normalized.nScopeRows = keep.length;
+  normalized.meta = { ...normalized.meta, eligibilityApplied: true, eligibilityRecoveredFromInventoryClass: true };
+  const usedSubscriptions = new Set(normalized.R.s || []);
+  normalized.subs?.forEach((sub, index) => { sub.inScope = usedSubscriptions.has(index); });
+  return normalized;
+}
+
 function summarize(snapshot) {
   const r = snapshot.R || {}, dict = snapshot.dict || {};
   const indexes = Array.from({ length: (r.s || []).length }, (_, i) => i);
@@ -115,7 +135,7 @@ async function latestSnapshot(dir, baseline) {
   try {
     const id = (await fs.readFile(path.join(dir, 'latest.txt'), 'utf8')).trim();
     if (!/^[a-zA-Z0-9._-]+$/.test(id)) throw new Error('Identificador inválido');
-    return JSON.parse((await gunzip(await fs.readFile(path.join(dir, `${id}.json.gz`)))).toString('utf8'));
+    return normalizeEligibility(JSON.parse((await gunzip(await fs.readFile(path.join(dir, `${id}.json.gz`)))).toString('utf8')));
   } catch (error) {
     if (error.code !== 'ENOENT' && error.message !== 'Identificador inválido') console.error('Falha ao ler fotografia:', error.message);
     return baseline;
@@ -127,6 +147,8 @@ async function saveSnapshot(dir, snapshot, req) {
     throw Object.assign(new Error('Fotografia inválida ou sem Data de Coleta'), { status: 400 });
   if (!/^\d{4}-\d{2}-\d{2}$/.test(snapshot.meta.date))
     throw Object.assign(new Error('Data de Coleta inválida'), { status: 400 });
+  if (Array.isArray(snapshot.R.CLASSE_INVENTARIO) && snapshot.meta.eligibilityApplied !== true)
+    throw Object.assign(new Error('A fotografia contém inventário classificado, mas a elegibilidade não foi aplicada. Atualize a página e importe novamente.'), { status: 400 });
   await fs.mkdir(dir, { recursive: true });
   const savedAt = new Date().toISOString();
   const id = `${snapshot.meta.date}--${savedAt.replace(/[:.]/g, '-')}`;
@@ -269,5 +291,5 @@ if (require.main === module) {
   const port = process.env.PORT || 8080;
   createServer().listen(port, '0.0.0.0', () => console.log('Dashboard iniciado com histórico persistente.'));
 }
-module.exports = { createServer, readDashboard, summarize, injectSnapshot };
+module.exports = { createServer, readDashboard, summarize, injectSnapshot, normalizeEligibility };
 

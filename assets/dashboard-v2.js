@@ -76,13 +76,78 @@
     ['microsoft.migrate/movecollections','migration.svg']
   ];
   const resourceIcon=type=>iconBase+(iconMap.find(([key])=>String(type||'').toLowerCase()===key)?.[1]||'all-resources.svg');
-  const typeLabel=type=>({
-    'microsoft.compute/virtualmachines':'Máquina Virtual','microsoft.storage/storageaccounts':'Storage Account',
-    'microsoft.containerservice/managedclusters':'Kubernetes Service','microsoft.sql/servers/databases':'SQL Database',
-    'microsoft.sqlvirtualmachine/sqlvirtualmachines':'SQL Virtual Machine','microsoft.web/sites':'App Service',
-    'microsoft.keyvault/vaults':'Key Vault','microsoft.network/virtualnetworks':'Virtual Network',
-    'microsoft.network/privateendpoints':'Private Endpoint'
-  })[String(type||'').toLowerCase()]||String(type||'').replace(/^microsoft\./i,'');
+  const resourceTypeLabels={
+    'microsoft.azurearcdata/sqlserverinstances':'Azure Arc-enabled SQL Server','microsoft.hybridcompute/machines':'Azure Arc-enabled Server',
+    'microsoft.compute/restorepointcollections':'Restore Point Collection','microsoft.storage/storageaccounts':'Storage Account',
+    'microsoft.insights/datacollectionrules':'Data Collection Rule','microsoft.operationalinsights/workspaces':'Log Analytics Workspace',
+    'microsoft.operationsmanagement/solutions':'Operations Management Solution','microsoft.compute/disks':'Managed Disk',
+    'microsoft.compute/virtualmachinescalesets':'Virtual Machine Scale Set','microsoft.managedidentity/userassignedidentities':'User Assigned Managed Identity',
+    'microsoft.network/loadbalancers':'Load Balancer','microsoft.network/networkinterfaces':'Network Interface',
+    'microsoft.network/networksecuritygroups':'Network Security Group','microsoft.network/privateendpoints':'Private Endpoint',
+    'microsoft.network/publicipaddresses':'Public IP Address','microsoft.network/routetables':'Route Table',
+    'microsoft.compute/snapshots':'Snapshot','microsoft.network/privatednszones':'Private DNS Zone',
+    'microsoft.network/privatednszones/virtualnetworklinks':'Virtual Network Link','microsoft.compute/virtualmachines':'Virtual Machine',
+    'microsoft.recoveryservices/vaults':'Recovery Services Vault','microsoft.network/virtualnetworks':'Virtual Network',
+    'microsoft.network/networkwatchers':'Network Watcher','microsoft.migrate/movecollections':'Resource Mover Collection',
+    'microsoft.containerservice/managedclusters':'Azure Kubernetes Service (AKS)','microsoft.keyvault/vaults':'Key Vault',
+    'microsoft.network/applicationgateways':'Application Gateway','microsoft.network/applicationgatewaywebapplicationfirewallpolicies':'Web Application Firewall Policy',
+    'microsoft.automation/automationaccounts':'Automation Account','microsoft.automation/automationaccounts/runbooks':'Automation Runbook',
+    'microsoft.dbforpostgresql/flexibleservers':'Azure Database for PostgreSQL Flexible Server','microsoft.dbformysql/flexibleservers':'Azure Database for MySQL Flexible Server',
+    'microsoft.sqlvirtualmachine/sqlvirtualmachines':'SQL Virtual Machine','microsoft.alertsmanagement/smartdetectoralertrules':'Smart Detector Alert Rule',
+    'microsoft.cache/redis':'Azure Cache for Redis','microsoft.cache/redisenterprise':'Azure Cache for Redis Enterprise',
+    'microsoft.eventhub/namespaces':'Event Hubs Namespace','microsoft.web/serverfarms':'App Service Plan','microsoft.web/sites':'App Service',
+    'microsoft.insights/datacollectionendpoints':'Data Collection Endpoint','microsoft.network/bastionhosts':'Azure Bastion',
+    'microsoft.sql/servers':'Azure SQL Server','microsoft.sql/servers/databases':'SQL Database','microsoft.sql/servers/elasticpools':'SQL Elastic Pool',
+    'microsoft.compute/galleries':'Azure Compute Gallery','microsoft.compute/galleries/images':'Compute Gallery Image Definition',
+    'microsoft.compute/galleries/images/versions':'Compute Gallery Image Version','microsoft.containerregistry/registries':'Azure Container Registry',
+    'microsoft.containerregistry/registries/replications':'Container Registry Replication','microsoft.containerregistry/registries/webhooks':'Container Registry Webhook',
+    'microsoft.dataprotection/backupvaults':'Backup Vault','microsoft.insights/components':'Application Insights',
+    'microsoft.web/certificates':'App Service Certificate','microsoft.web/sites/slots':'App Service Deployment Slot',
+    'microsoft.web/connectiongateways':'On-premises Data Gateway','microsoft.web/connections':'API Connection',
+    'microsoft.kubernetesconfiguration/privatelinkscopes':'Azure Arc Private Link Scope','github.network/networksettings':'GitHub Network Settings',
+    'microsoft.compute/images':'Managed Image','microsoft.devtestlab/schedules':'DevTest Labs Schedule',
+    'microsoft.network/natgateways':'NAT Gateway','microsoft.network/publicipprefixes':'Public IP Prefix',
+    'microsoft.network/applicationsecuritygroups':'Application Security Group','microsoft.insights/activitylogalerts':'Activity Log Alert',
+    'microsoft.network/ddosprotectionplans':'DDoS Protection Plan','microsoft.security/automations':'Microsoft Defender for Cloud Automation',
+    'microsoft.insights/actiongroups':'Action Group','microsoft.insights/metricalerts':'Metric Alert','microsoft.insights/scheduledqueryrules':'Log Search Alert Rule',
+    'microsoft.compute/capacityreservationgroups':'Capacity Reservation Group','microsoft.compute/capacityreservationgroups/capacityreservations':'Capacity Reservation',
+    'microsoft.migrate/assessmentprojects':'Azure Migrate Assessment Project','microsoft.migrate/migrateprojects':'Azure Migrate Project',
+    'microsoft.offazure/mastersites':'Azure Migrate Appliance Site','microsoft.offazure/serversites':'Azure Migrate Server Site','microsoft.offazure/vmwaresites':'Azure Migrate VMware Site',
+    'microsoft.certificateregistration/certificateorders':'App Service Certificate Order','microsoft.saas/resources':'SaaS Resource',
+    'microsoft.compute/sshpublickeys':'SSH Key','microsoft.confluent/organizations':'Confluent Organization','microsoft.insights/workbooks':'Azure Workbook',
+    'microsoft.servicebus/namespaces':'Service Bus Namespace','microsoft.app/containerapps':'Container App','microsoft.app/managedenvironments':'Container Apps Environment',
+    'microsoft.app/managedenvironments/certificates':'Container Apps Environment Certificate','microsoft.app/jobs':'Container Apps Job',
+    'microsoft.containerinstance/containergroups':'Container Instance','microsoft.search/searchservices':'Azure AI Search',
+    'microsoft.fabric/capacities':'Microsoft Fabric Capacity','microsoft.datafactory/factories':'Azure Data Factory',
+    'microsoft.cognitiveservices/accounts/projects':'Azure AI Foundry Project','microsoft.documentdb/databaseaccounts':'Azure Cosmos DB Account',
+    'microsoft.documentdb/mongoclusters':'Azure Cosmos DB for MongoDB vCore Cluster','microsoft.resources/templatespecs':'Template Spec',
+    'microsoft.resources/templatespecs/versions':'Template Spec Version','microsoft.keyvault/managedhsms':'Managed HSM',
+    'microsoft.eventgrid/systemtopics':'Event Grid System Topic','microsoft.maintenance/maintenanceconfigurations':'Maintenance Configuration',
+    'microsoft.desktopvirtualization/applicationgroups':'Azure Virtual Desktop Application Group','microsoft.desktopvirtualization/hostpools':'Azure Virtual Desktop Host Pool',
+    'microsoft.desktopvirtualization/workspaces':'Azure Virtual Desktop Workspace','microsoft.powerbidedicated/capacities':'Power BI Embedded Capacity',
+    'microsoft.compute/availabilitysets':'Availability Set','microsoft.network/connections':'VPN Connection',
+    'microsoft.network/expressroutecircuits':'ExpressRoute Circuit','microsoft.network/virtualnetworkgateways':'Virtual Network Gateway',
+    'microsoft.botservice/botservices':'Azure Bot Service','microsoft.logic/workflows':'Logic App',
+    'microsoft.portal/dashboards':'Azure Portal Dashboard','microsoft.purview/accounts':'Microsoft Purview Account',
+    'microsoft.web/staticsites':'Static Web App','microsoft.network/dnszones':'DNS Zone','microsoft.visualstudio/account':'Azure DevOps Organization',
+    'microsoft.alertsmanagement/prometheusrulegroups':'Prometheus Rule Group','microsoft.monitor/accounts':'Azure Monitor Workspace',
+    'microsoft.databricks/accessconnectors':'Azure Databricks Access Connector','microsoft.databricks/workspaces':'Azure Databricks Workspace',
+    'microsoft.apimanagement/service':'API Management Service','microsoft.appconfiguration/configurationstores':'App Configuration Store',
+    'microsoft.insights/webtests':'Application Insights Availability Test','microsoft.network/networkintentpolicies':'Network Intent Policy',
+    'microsoft.fileshares/fileshares':'Azure File Share','microsoft.machinelearningservices/workspaces':'Azure Machine Learning Workspace',
+    'microsoft.network/networkprofiles':'Network Profile','microsoft.azureactivedirectory/b2cdirectories':'Azure AD B2C Tenant',
+    'microsoft.cdn/profiles':'Front Door/CDN Profile','microsoft.cdn/profiles/endpoints':'CDN Endpoint',
+    'microsoft.datamigration/services':'Azure Database Migration Service','microsoft.datamigration/services/projects':'Database Migration Project',
+    'microsoft.network/dnsresolvers':'DNS Private Resolver','microsoft.network/dnsresolvers/inboundendpoints':'DNS Resolver Inbound Endpoint',
+    'microsoft.datashare/accounts':'Azure Data Share Account','microsoft.logic/integrationaccounts':'Integration Account',
+    'microsoft.communication/communicationservices':'Azure Communication Services','microsoft.communication/emailservices':'Email Communication Service',
+    'microsoft.communication/emailservices/domains':'Email Communication Domain','microsoft.syntex/accounts':'Microsoft Syntex Account',
+    'microsoft.domainregistration/domains':'App Service Domain','microsoft.network/networksecurityperimeters':'Network Security Perimeter',
+    'microsoft.synapse/workspaces':'Azure Synapse Workspace','microsoft.synapse/workspaces/bigdatapools':'Apache Spark Pool',
+    'microsoft.storagesync/storagesyncservices':'Storage Sync Service','microsoft.network/trafficmanagerprofiles':'Traffic Manager Profile',
+    'microsoft.operationalinsights/querypacks':'Log Analytics Query Pack','microsoft.resourcegraph/queries':'Resource Graph Query'
+  };
+  const typeLabel=type=>{const raw=String(type||'').trim(),key=raw.toLowerCase();if(resourceTypeLabels[key])return resourceTypeLabels[key];const leaf=(raw.replace(/^[^/]+\//,'').split('/').pop()||raw).replace(/[-_]+/g,' ').replace(/([a-z0-9])([A-Z])/g,'$1 $2');return leaf.replace(/\b\w/g,c=>c.toUpperCase())||'Tipo não informado'};
   const globalFilters={ambiente:'',bu:'',capex:'',type:'',search:''};
   const matchesGlobal=i=>(!globalFilters.ambiente||val('AMBIENTE',i)===globalFilters.ambiente)&&(!globalFilters.bu||val('BU',i)===globalFilters.bu)&&(!globalFilters.capex||val('CAPEX',i)===globalFilters.capex)&&(!globalFilters.type||DI.type[R.t[i]]===globalFilters.type)&&(!globalFilters.search||`${R.n[i]} ${R.id[i]} ${D.rgs[R.g[i]][0]} ${D.subs[R.s[i]].name}`.toLowerCase().includes(globalFilters.search));
   const baseIdxsV2=idxs;idxs=()=>baseIdxsV2().filter(matchesGlobal);
@@ -168,12 +233,12 @@
     const cards=[
       ['subscription.svg','Subscriptions corporativas',master.length||D.subs.length,`${active.length||'—'} ativas · ${master.filter(x=>norm(x.status)==='DISABLED').length||0} desativadas`],
       ['subscription.svg','Ativas no escopo',activeScope.length||'—',`${inScope.length||'—'} marcadas como escopo Sim`],
-      ['resource-group.svg','Com recursos elegíveis',observed.size,'subscriptions observadas nesta coleta'],
+      ['all-resources.svg','Com recursos elegíveis',observed.size,'subscriptions observadas nesta coleta'],
       ['resource-group.svg','Resource Groups',rgs.size,'com ao menos um recurso elegível'],
-      ['resource-group.svg','Recursos elegíveis',ix.length,'ResourceId distinto'],
-      ['resource-group.svg','CLIENTE classificado',pct(cliente.cl,cliente.n),`${fmt(cliente.cl)} de ${fmt(cliente.n)}`],
-      ['resource-group.svg','PRODUTO classificado',pct(produto.cl,produto.n),`${fmt(produto.cl)} de ${fmt(produto.n)}`],
-      ['resource-group.svg','Cobertura FOLIO',D.meta?.folioCollected?pct(folio.fill,folio.n):'—',D.meta?.folioCollected?`${fmt(folio.fill)} de ${fmt(folio.n)} CAPEX=SIM`:'FOLIO não coletado']
+      ['resource-graph.svg','Recursos elegíveis',ix.length,'ResourceId distinto'],
+      ['managed-identity.svg','CLIENTE classificado',pct(cliente.cl,cliente.n),`${fmt(cliente.cl)} de ${fmt(cliente.n)}`],
+      ['solution.svg','PRODUTO classificado',pct(produto.cl,produto.n),`${fmt(produto.cl)} de ${fmt(produto.n)}`],
+      ['dashboard.svg','Cobertura FOLIO',D.meta?.folioCollected?pct(folio.fill,folio.n):'—',D.meta?.folioCollected?`${fmt(folio.fill)} de ${fmt(folio.n)} CAPEX=SIM`:'FOLIO não coletado']
     ];
     $('execKpisV2').innerHTML=cards.map(c=>`<div class="panel kpi c3"><div class="kpi-head"><div><div class="eyebrow">${c[1]}</div><div class="v">${typeof c[2]==='number'?fmt(c[2]):c[2]}</div></div>${icon(c[0])}</div><div class="d">${c[3]}</div></div>`).join('');
     $('stackTagsV2').innerHTML=TAGS.map(t=>stackRow(t,ix)).join('');

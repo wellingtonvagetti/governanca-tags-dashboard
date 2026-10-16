@@ -234,7 +234,10 @@ function createServer(options = {}) {
         try {
           const file = await fs.readFile(path.join(__dirname, relative));
           const type = relative.endsWith('.svg') ? 'image/svg+xml' : relative.endsWith('.css') ? 'text/css; charset=utf-8' : 'application/javascript; charset=utf-8';
-          res.writeHead(200, { 'Content-Type': type, 'Content-Length': file.length, 'Cache-Control': 'public, max-age=31536000, immutable' });
+          const cacheControl = relative.endsWith('.js') || relative.endsWith('.css')
+            ? 'no-cache, must-revalidate'
+            : 'public, max-age=31536000, immutable';
+          res.writeHead(200, { 'Content-Type': type, 'Content-Length': file.length, 'Cache-Control': cacheControl });
           return res.end(req.method === 'HEAD' ? undefined : file);
         } catch (error) { if (error.code !== 'ENOENT') throw error; res.writeHead(404); return res.end('Não encontrado'); }
       }

@@ -170,10 +170,7 @@
     const meta=headerRow.querySelector('.meta');
     if(meta){
       const tools=document.createElement('div');tools.className='header-tools';tools.setAttribute('aria-label','Controles de visualização');
-      tools.innerHTML='<button type="button" class="header-tool" id="themeBtn" title="Alternar tema claro e escuro">DARK</button><button type="button" class="header-tool" id="fontBtn" title="Alternar tamanho da fonte">FONTE: NORMAL</button>';
-      const presentation=$('presentationBtn'),print=$('printBtn');
-      if(presentation){presentation.className='header-tool';presentation.textContent='APRESENTAR';tools.appendChild(presentation)}
-      if(print){print.className='header-tool';print.textContent='PDF';tools.appendChild(print)}
+      tools.innerHTML='<button type="button" class="header-tool" id="themeBtn" title="Tema atualmente ativo; clique para alternar">LIGHT</button><button type="button" class="header-tool" id="fontBtn" title="Alternar tamanho da fonte">FONTE: NORMAL</button>';
       meta.insertBefore(tools,meta.firstChild);
     }
   }
@@ -183,7 +180,7 @@
     const dark=theme==='dark';document.body.classList.toggle('dark-theme',dark);
     soloLogo.src='/assets/solo-white.png';
     evertecLogo.src='/assets/evertec-white.png';
-    themeBtn.textContent=dark?'LIGHT':'DARK';themeBtn.setAttribute('aria-pressed',String(dark));
+    themeBtn.textContent=dark?'DARK':'LIGHT';themeBtn.title=`Tema ${dark?'escuro':'claro'} ativo; clique para alternar`;themeBtn.setAttribute('aria-pressed',String(dark));
     try{localStorage.setItem('governanca-theme',dark?'dark':'light')}catch(_){ }
   }
   let savedTheme='light';try{savedTheme=localStorage.getItem('governanca-theme')||'light'}catch(_){ }
@@ -191,18 +188,13 @@
 
   const fontModes=[['font-normal','FONTE: NORMAL'],['font-large','FONTE: GRANDE'],['font-xlarge','FONTE: EXTRA GRANDE']];
   let fontIndex=0;try{fontIndex=Math.max(0,Math.min(2,+localStorage.getItem('governanca-font')||0))}catch(_){ }
-  function applyFont(){document.body.classList.remove(...fontModes.map(x=>x[0]));document.body.classList.add(fontModes[fontIndex][0]);fontBtn.textContent=fontModes[fontIndex][1];try{localStorage.setItem('governanca-font',String(fontIndex))}catch(_){ }syncHeaderHeight()}
-  fontBtn.addEventListener('click',()=>{fontIndex=(fontIndex+1)%fontModes.length;applyFont()});
+  function applyFont(animate=false){document.body.classList.remove(...fontModes.map(x=>x[0]));document.body.classList.add(fontModes[fontIndex][0]);fontBtn.textContent=fontModes[fontIndex][1];if(animate){document.body.classList.remove('font-changing');void document.body.offsetWidth;document.body.classList.add('font-changing');setTimeout(()=>document.body.classList.remove('font-changing'),320)}try{localStorage.setItem('governanca-font',String(fontIndex))}catch(_){ }requestAnimationFrame(syncHeaderHeight)}
+  fontBtn.addEventListener('click',()=>{fontIndex=(fontIndex+1)%fontModes.length;applyFont(true)});
 
   const syncHeaderHeight=()=>document.documentElement.style.setProperty('--header-height',`${document.querySelector('.top')?.offsetHeight||0}px`);
   new ResizeObserver(syncHeaderHeight).observe(document.querySelector('.top'));
   syncHeaderHeight();
   applyFont();
-  const presentationBtn=$('presentationBtn');
-  if(presentationBtn){
-    const syncPresentation=()=>{const active=!!document.fullscreenElement;document.body.classList.toggle('presentation-mode',active);presentationBtn.textContent=active?'SAIR':'APRESENTAR';presentationBtn.setAttribute('aria-pressed',String(active));syncHeaderHeight()};
-    document.addEventListener('fullscreenchange',syncPresentation);syncPresentation();
-  }
   const evidence=document.querySelector('.evidence-strip');
   if(evidence){evidence.children[0].innerHTML='<b>Recursos elegíveis de Governança</b> · mg-evertecbrasil';evidence.children[1].textContent='Subscriptions corporativas e recursos observados são universos separados';}
   evidence?.insertAdjacentHTML('afterend',`<div class="global-filter-bar" aria-label="Filtros rápidos globais"><div class="global-filter-title"><b>Filtros rápidos</b><span id="globalFilterCount"></span></div><label>AMBIENTE<select id="globalAmbiente"><option value="">Todos</option></select></label><label>BU<select id="globalBu"><option value="">Todas</option></select></label><label>CAPEX<select id="globalCapex"><option value="">Todos</option></select></label><label>TIPO<select id="globalType"><option value="">Todos</option></select></label><label class="global-search">BUSCAR<input id="globalSearch" type="search" placeholder="Recurso, RG, Subscription ou ID"></label><button class="action-btn" id="globalClear">Limpar</button></div>`);

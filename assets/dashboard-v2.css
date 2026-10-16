@@ -51,10 +51,17 @@ body.dark-theme .corporate-footer{background:rgba(7,8,12,.97)}
 .corporate-footer p{margin:0;text-align:center;font:500 calc(11px * var(--ui-scale))/1.45 var(--f-mono);letter-spacing:.015em;color:#d7e0e8}
 .corporate-footer a{color:#fff;font-weight:700;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.42);text-underline-offset:3px}.corporate-footer a:hover{border-bottom-color:var(--accent);color:#fff}
 body.font-large,body.font-xlarge{font-size:calc(14px * var(--ui-scale))}
+body.font-large main>.wrap{max-width:1480px}body.font-xlarge main>.wrap{max-width:1640px}
+body.font-large .panel,body.font-xlarge .panel{padding:calc(18px * var(--ui-scale))}
+body.font-large .grid,body.font-xlarge .grid{gap:calc(12px * var(--ui-scale))}
+body.font-large .kpi .v,body.font-xlarge .kpi .v{font-size:calc(34px * var(--ui-scale))}
 body.font-large nav.tabs button,body.font-xlarge nav.tabs button{font-size:calc(13.5px * var(--ui-scale));padding-inline:calc(14px * var(--ui-scale))}
 body.font-large .panel h2,body.font-xlarge .panel h2{font-size:calc(15px * var(--ui-scale))}body.font-large .panel .sub,body.font-xlarge .panel .sub,body.font-large .kpi .d,body.font-xlarge .kpi .d{font-size:calc(12.5px * var(--ui-scale))}
 body.font-large .eyebrow,body.font-xlarge .eyebrow{font-size:calc(11px * var(--ui-scale))}body.font-large table,body.font-xlarge table{font-size:calc(12.5px * var(--ui-scale))}
-body.presentation-mode .wrap{max-width:1680px}body.presentation-mode main .wrap{padding-top:14px}body.presentation-mode .evidence-strip{display:none}
+body.font-large :is(input,select,.action-btn,.header-tool),body.font-xlarge :is(input,select,.action-btn,.header-tool){font-size:calc(12px * var(--ui-scale));padding:calc(7px * var(--ui-scale)) calc(10px * var(--ui-scale))}
+body.font-large :is(td,th),body.font-xlarge :is(td,th){padding:calc(7px * var(--ui-scale)) calc(8px * var(--ui-scale))}
+body.font-large :is(.global-filter-bar,.advanced-top,.detail-filters),body.font-xlarge :is(.global-filter-bar,.advanced-top,.detail-filters){gap:calc(10px * var(--ui-scale))}
+body.font-changing main,body.font-changing header,body.font-changing footer{animation:font-resize-feedback .3s ease both}@keyframes font-resize-feedback{0%{opacity:.72;transform:scale(.992)}100%{opacity:1;transform:scale(1)}}
 @media(max-width:1180px){.top>.wrap{padding-inline:20px}.top .hrow{flex-wrap:wrap}.partner-brand{min-width:auto}.top .brand{flex:1}.top .meta{width:100%;justify-content:flex-end}.header-tools{flex-wrap:wrap}}
 @media(max-width:700px){.top>.wrap{padding-inline:16px}.top .hrow{align-items:flex-start}.partner-brand{width:100%}.top .meta{justify-content:flex-start;overflow-x:auto}.header-tools{width:max-content;flex-wrap:nowrap;padding-bottom:3px}.header-tool{flex:0 0 auto}.partner-logo-slot{height:34px}.solo-slot img{width:76px}.evertec-slot img{width:94px}.top .brand{min-width:0}.top .brand h1{font-size:18px}nav.tabs{display:flex;justify-content:flex-start;overflow-x:auto}nav.tabs button{flex:0 0 auto}}
 @media print{body{padding-top:0!important;display:block;background:#fff!important;color:#111!important}.corporate-footer{background:#fff!important;color:#111!important;border-top:1px solid #bbb}.corporate-footer p,.corporate-footer p strong{color:#111!important}.header-tools{display:none!important}body:before{display:none!important}}

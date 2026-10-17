@@ -31,7 +31,8 @@ body.dark-theme header.top{background:rgba(7,8,12,.97);border-bottom-color:rgba(
 main{flex:1 0 auto;width:100%}
 @media(min-width:1024px){main>.wrap{max-width:none;width:100%;padding-inline:clamp(28px,3vw,52px)}section.page{gap:20px}.panel{padding:18px 20px}}
 .partner-brand{display:flex;align-items:center;gap:9px;min-width:248px;align-self:center}
-.partner-logo-slot{display:flex;align-items:center;justify-content:center;height:39px;padding:2px}
+.partner-logo-slot{display:flex;align-items:center;justify-content:center;height:39px;padding:2px;text-decoration:none;border-radius:6px;transition:background .18s ease,transform .18s ease}
+.partner-logo-slot:hover,.partner-logo-slot:focus-visible{background:rgba(255,255,255,.08);transform:translateY(-1px);outline:none}
 .partner-logo-slot img{display:block;object-fit:contain}.solo-slot img{width:96px;max-height:38px}.evertec-slot img{width:105px;max-height:29px}.partner-amp{color:#fff;font:500 19px var(--f-body)}
 body.dark-theme .solo-slot,body.dark-theme .evertec-slot{background:transparent;padding:2px}
 .top .hrow{align-items:center}.top .brand{flex:1;min-width:250px}.top .meta{justify-content:flex-end;flex-wrap:nowrap}

@@ -73,7 +73,26 @@
     ['microsoft.hybridcompute/machines/extensions','azure-arc.svg'],
     ['microsoft.azurearcdata/sqlserverinstances','azure-arc.svg'],
     ['microsoft.azurearcdata/sqlserverinstances/databases','azure-arc.svg'],
-    ['microsoft.migrate/movecollections','migration.svg']
+    ['microsoft.migrate/movecollections','migration.svg'],
+    ['microsoft.apimanagement/service','api-management.svg'],['microsoft.web/connections','api-connection.svg'],['microsoft.web/connectiongateways','api-connection.svg'],
+    ['microsoft.appconfiguration/configurationstores','app-configuration.svg'],['microsoft.web/certificates','certificate.svg'],['microsoft.certificateregistration/certificateorders','certificate.svg'],['microsoft.app/managedenvironments/certificates','certificate.svg'],
+    ['microsoft.domainregistration/domains','app-domain.svg'],['microsoft.web/sites/slots','deployment-slot.svg'],['microsoft.insights/webtests','application-insights.svg'],['microsoft.network/applicationsecuritygroups','application-security-group.svg'],
+    ['microsoft.botservice/botservices','bot-service.svg'],['microsoft.communication/communicationservices','communication-services.svg'],['microsoft.communication/emailservices','communication-services.svg'],['microsoft.communication/emailservices/domains','communication-services.svg'],
+    ['microsoft.documentdb/databaseaccounts','cosmos-db.svg'],['microsoft.documentdb/mongoclusters','cosmos-db.svg'],['microsoft.datafactory/factories','data-factory.svg'],['microsoft.datashare/accounts','data-share.svg'],
+    ['microsoft.dbformysql/flexibleservers','mysql.svg'],['microsoft.datamigration/services','database-migration.svg'],['microsoft.datamigration/services/projects','database-migration.svg'],['microsoft.databricks/accessconnectors','databricks.svg'],['microsoft.databricks/workspaces','databricks.svg'],
+    ['microsoft.visualstudio/account','azure-devops.svg'],['github.network/networksettings','azure-devops.svg'],['microsoft.fileshares/fileshares','file-share.svg'],['microsoft.machinelearningservices/workspaces','machine-learning.svg'],['microsoft.cognitiveservices/accounts/projects','machine-learning.svg'],
+    ['microsoft.insights/workbooks','workbook.svg'],['microsoft.compute/capacityreservationgroups','capacity-reservation.svg'],['microsoft.compute/capacityreservationgroups/capacityreservations','capacity-reservation.svg'],['microsoft.compute/galleries/images/versions','compute-gallery.svg'],
+    ['microsoft.cdn/profiles','cdn.svg'],['microsoft.cdn/profiles/endpoints','cdn.svg'],['microsoft.confluent/organizations','event-hub.svg'],['microsoft.app/jobs','container-app.svg'],['microsoft.app/managedenvironments','container-environment.svg'],
+    ['microsoft.desktopvirtualization/applicationgroups','avd-application-group.svg'],['microsoft.desktopvirtualization/hostpools','avd-host-pool.svg'],['microsoft.desktopvirtualization/workspaces','virtual-desktop.svg'],
+    ['microsoft.synapse/workspaces','synapse.svg'],['microsoft.synapse/workspaces/bigdatapools','synapse.svg'],['microsoft.network/trafficmanagerprofiles','traffic-manager.svg'],['microsoft.logic/workflows','logic-app.svg'],['microsoft.logic/integrationaccounts','integration-account.svg'],
+    ['microsoft.resources/templatespecs','template-spec.svg'],['microsoft.resources/templatespecs/versions','template-spec.svg'],['microsoft.purview/accounts','purview.svg'],['microsoft.search/searchservices','search.svg'],['microsoft.powerbidedicated/capacities','power-bi.svg'],['microsoft.fabric/capacities','power-bi.svg'],
+    ['microsoft.web/staticsites','static-app.svg'],['microsoft.sql/servers/elasticpools','elastic-pool.svg'],['microsoft.storagesync/storagesyncservices','storage-sync.svg'],['microsoft.azureactivedirectory/b2cdirectories','b2c.svg'],
+    ['microsoft.network/ddosprotectionplans','ddos.svg'],['microsoft.network/dnsresolvers','dns-resolver.svg'],['microsoft.network/dnsresolvers/inboundendpoints','dns-resolver.svg'],['microsoft.network/networksecurityperimeters','network-security-perimeter.svg'],
+    ['microsoft.network/networkintentpolicies','network-security-group.svg'],['microsoft.network/networkprofiles','network-interface.svg'],['microsoft.network/dnszones','private-dns.svg'],['microsoft.network/natgateways','virtual-network-gateway.svg'],['microsoft.network/publicipprefixes','public-ip.svg'],
+    ['microsoft.maintenance/maintenanceconfigurations','maintenance.svg'],['microsoft.eventgrid/systemtopics','event-grid.svg'],['microsoft.devtestlab/schedules','schedule.svg'],['microsoft.alertsmanagement/prometheusrulegroups','monitor.svg'],['microsoft.monitor/accounts','monitor.svg'],
+    ['microsoft.offazure/mastersites','migration.svg'],['microsoft.offazure/serversites','migration.svg'],['microsoft.offazure/vmwaresites','migration.svg'],['microsoft.migrate/assessmentprojects','migration.svg'],['microsoft.migrate/migrateprojects','migration.svg'],
+    ['microsoft.containerregistry/registries/webhooks','container-registry.svg'],['microsoft.security/automations','automation.svg'],['microsoft.saas/resources','solution.svg'],['microsoft.syntex/accounts','solution.svg'],
+    ['microsoft.kubernetesconfiguration/privatelinkscopes','azure-arc.svg']
   ];
   const resourceIcon=type=>iconBase+(iconMap.find(([key])=>String(type||'').toLowerCase()===key)?.[1]||'all-resources.svg');
   const resourceTypeLabels={
@@ -163,9 +182,9 @@
   if(oldBrandMark)oldBrandMark.remove();
   if(headerRow){
     headerRow.insertAdjacentHTML('afterbegin',`<div class="partner-brand" aria-label="Solo Network e Evertec">
-      <span class="partner-logo-slot solo-slot"><img id="soloThemeLogo" src="/assets/solo-white.png" alt="Solo Network"></span>
+      <a class="partner-logo-slot solo-slot" href="https://solonetwork.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Abrir site da Solo Network"><img id="soloThemeLogo" src="/assets/solo-white.png" alt="Solo Network"></a>
       <span class="partner-amp" aria-hidden="true">&amp;</span>
-      <span class="partner-logo-slot evertec-slot"><img id="evertecThemeLogo" src="/assets/evertec-white.png" alt="Evertec"></span>
+      <a class="partner-logo-slot evertec-slot" href="https://evertecinc.com/pt-br/" target="_blank" rel="noopener noreferrer" aria-label="Abrir site da Evertec"><img id="evertecThemeLogo" src="/assets/evertec-white.png" alt="Evertec"></a>
     </div>`);
     const meta=headerRow.querySelector('.meta');
     if(meta){
@@ -257,8 +276,9 @@
   function valueParts(value){return String(value||'').split(/[,;|\n\r]+/).map(x=>x.trim()).filter(Boolean)}
   function compactValueCell(value,label='Valor'){
     if(value==null||String(value).trim()==='')return '<span class="pill bad">vazio</span>';
-    const text=String(value).trim();if(text==='INDEFINIDO')return '<span class="pill warn">INDEFINIDO</span>';if(text.length<=LONG_VALUE_LIMIT)return esc(text);
-    const parts=valueParts(text),signature=`${label}\u0001${text}`;let key=longValueKeys.get(signature);if(!key){key=`long-${++longValueSequence}`;longValueKeys.set(signature,key);longValueStore.set(key,{label,text,parts})}
+    const text=String(value).trim();if(text==='INDEFINIDO')return '<span class="pill warn">INDEFINIDO</span>';
+    const parts=valueParts(text),forceProductList=norm(label)==='PRODUTO'&&parts.length>=2;if(text.length<=LONG_VALUE_LIMIT&&!forceProductList)return esc(text);
+    const signature=`${label}\u0001${text}`;let key=longValueKeys.get(signature);if(!key){key=`long-${++longValueSequence}`;longValueKeys.set(signature,key);longValueStore.set(key,{label,text,parts})}
     const summary=parts.length>1?`${fmt(parts.length)} valores`:`${text.slice(0,22).trim()}…`;
     return `<button type="button" class="compact-value" data-long-value="${key}" title="Abrir valor completo"><span>${esc(summary)}</span><small>Ver detalhes →</small></button>`;
   }
@@ -371,6 +391,12 @@
   labels[0].insertAdjacentHTML('afterend','<label>2. Cadastro de subscriptions (opcional)<input id="subscriptionsFileV2" type="file" accept=".csv,text/csv"><small class="muted">Mantém o cadastro atual se não for selecionado.</small></label>');
   const oldButton=$('applyImport'),newButton=oldButton.cloneNode(true);newButton.textContent='Gravar nova fotografia';oldButton.replaceWith(newButton);
   newButton.addEventListener('click',async()=>{const msg=$('importMessage');newButton.disabled=true;try{const file=$('csvFull').files[0];if(!file)throw Error('Selecione o CSV de recursos elegíveis da Governança.');msg.textContent='Lendo e validando os recursos elegíveis de Governança…';const source=parseCSV(await file.text()),parsed=prepareGovernanceImport(source);let date=$('collectionDate').value;if(!date){const dates=[...new Set(parsed.dates.map(x=>x.slice(0,10)))];if(dates.length===1)date=dates[0]}if(!/^\d{4}-\d{2}-\d{2}$/.test(date||''))throw Error('Informe a Data de Coleta.');if(parsed.dates.some(x=>x.slice(0,10)!==date))throw Error('A data de extração do arquivo diverge da data selecionada.');const sf=$('subscriptionsFileV2').files[0];if(sf){governanceConfig.subscriptions=parseSubscriptions(simpleCSV(await sf.text()));await saveConfig()}const candidate=buildData(parsed,parsed,{date,fullFile:file.name,scopeFile:file.name,eligibleFile:file.name,subscriptionFile:sf?.name||D.meta?.subscriptionFile||'cadastro persistido',singleScope:true},H);candidate.R.sc=candidate.R.sc.map(()=>1);candidate.subs.forEach(s=>s.inScope=true);msg.textContent='Validação concluída. Gravando fotografia…';await persistSnapshot(candidate);D=candidate;R=D.R;N=R.s.length;DI=D.dict;curTag='AMBIENTE';selSub=null;selRg=null;Object.keys(globalFilters).forEach(k=>globalFilters[k]='');$('globalSearch').value='';refreshGlobalFilterOptions();detailOptions();render();syncEvidence();await loadSnapshotHistory();msg.textContent=`Fotografia gravada com ${fmt(parsed.index.size)} recursos elegíveis de Governança.`}catch(error){msg.textContent='Não atualizado: '+error.message}finally{newButton.disabled=false}});
+
+  /* Estado de análise é deliberadamente efêmero: F5 retorna à visão inicial limpa. */
+  Object.keys(globalFilters).forEach(key=>globalFilters[key]='');
+  advancedPreset=null;advancedRules=[];selSub=null;selRg=null;
+  for(const id of ['globalAmbiente','globalBu','globalCapex','globalType','globalSearch','detSubV2','detRgV2','detTypeV2','detPendV2','detSearchV2','advancedSearch']){const control=$(id);if(control){if(control.type==='checkbox')control.checked=false;else control.value=''}}
+  page='exec';$('tabs').querySelectorAll('button').forEach(button=>button.setAttribute('aria-selected',button.dataset.p==='exec'));document.querySelectorAll('section.page').forEach(section=>section.hidden=section.id!=='p-exec');
 
   const originalLoad=loadGovernanceConfig;
   loadGovernanceConfig=async function(){await originalLoad();detailOptions();render()};

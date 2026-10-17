@@ -176,6 +176,36 @@
   const masterSubscriptions=()=>Array.isArray(governanceConfig?.subscriptions)?governanceConfig.subscriptions:[];
   const icon=(name,cls='')=>`<img class="azure-icon ${cls}" src="${iconBase+name}" alt="">`;
 
+  const normalizedResourceId=id=>String(id||'').trim().toLowerCase().replace(/\/+$/,'');
+  function identityFromResourceId(id){
+    const raw=normalizedResourceId(id),parts=raw.split('/').filter(Boolean),subAt=parts.indexOf('subscriptions'),rgAt=parts.indexOf('resourcegroups'),providerAt=parts.indexOf('providers');
+    const typeParts=[];if(providerAt>=0&&parts[providerAt+1]&&parts[providerAt+2]){typeParts.push(parts[providerAt+1],parts[providerAt+2]);for(let i=providerAt+4;i<parts.length;i+=2)typeParts.push(parts[i])}
+    return {id:raw,name:parts.at(-1)||'',subscriptionId:subAt>=0?parts[subAt+1]||'':'',resourceGroup:rgAt>=0?parts[rgAt+1]||'':'',type:typeParts.join('/')};
+  }
+  function inventoryCategory(eligibility,inventoryClass){
+    const eligible=norm(eligibility),cls=norm(inventoryClass).replace(/[_-]+/g,' ');
+    if(eligible==='SIM')return 'Elegível';
+    if(!eligible||eligible==='(VAZIO)'||eligible==='A VALIDAR'||eligible==='A_VALIDAR'||eligible==='DESCONHECIDO')return 'Aguardando classificação';
+    if(cls.includes('FORA')&&cls.includes('ESCOPO'))return 'Fora do escopo';
+    if(cls.includes('EXCLU'))return 'Excluído por regra';
+    return 'Aguardando classificação';
+  }
+  let inventoryCache=null;
+  function fullInventory(){
+    if(inventoryCache)return inventoryCache;
+    const rows=new Map(),subNames=new Map(D.subs.map(s=>[String(s.id||'').toLowerCase(),s.name||s.id]));
+    for(let i=0;i<N;i++){
+      const id=normalizedResourceId(R.id[i]),identity=identityFromResourceId(id),sub=D.subs[R.s[i]]||{},rg=D.rgs[R.g[i]]||[];
+      rows.set(id,{id,name:R.n[i]||identity.name,type:DI.type[R.t[i]]||identity.type,subscription:sub.name||sub.id||identity.subscriptionId,subscriptionId:sub.id||identity.subscriptionId,resourceGroup:rg[0]||identity.resourceGroup,eligibility:'SIM',inventoryClass:'ELEGIVEL',classification:'Elegível',reason:'',rule:'',scope:'',managementGroups:''});
+    }
+    const trace=D.inventoryTrace||{},traceRows=Array.isArray(trace.rows)?trace.rows:(trace.id||[]).map((id,i)=>({id,eligibility:trace.eligibility?.[i],inventoryClass:trace.inventoryClass?.[i],reason:trace.reason?.[i],rule:trace.rule?.[i]}));
+    for(const item of traceRows){
+      const identity=identityFromResourceId(item.id),id=identity.id;if(!id)continue;const sid=String(item.subscriptionId||identity.subscriptionId||'').toLowerCase();
+      rows.set(id,{id,name:item.name||identity.name,type:String(item.type||identity.type||'').toLowerCase(),subscription:item.subscription||subNames.get(sid)||sid,subscriptionId:sid,resourceGroup:item.resourceGroup||identity.resourceGroup,eligibility:item.eligibility||'',inventoryClass:item.inventoryClass||'',classification:inventoryCategory(item.eligibility,item.inventoryClass),reason:item.reason||'',rule:item.rule||'',scope:item.scope||'',managementGroups:item.managementGroups||''});
+    }
+    inventoryCache=[...rows.values()];return inventoryCache;
+  }
+
   document.body.classList.add('scope-v2');
   const headerRow=document.querySelector('.top .hrow');
   const oldBrandMark=document.querySelector('.evertec-mark');
@@ -189,7 +219,7 @@
     const meta=headerRow.querySelector('.meta');
     if(meta){
       const tools=document.createElement('div');tools.className='header-tools';tools.setAttribute('aria-label','Controles de visualização');
-      tools.innerHTML='<button type="button" class="header-tool" id="themeBtn" title="Tema atualmente ativo; clique para alternar">LIGHT</button><button type="button" class="header-tool" id="fontBtn" title="Alternar tamanho da fonte">FONTE: NORMAL</button>';
+      tools.innerHTML='<button type="button" class="header-tool scope-inventory-tool" id="scopeInventoryBtn">ESCOPO E EXCLUSÕES</button><button type="button" class="header-tool" id="themeBtn" title="Tema atualmente ativo; clique para alternar">LIGHT</button><button type="button" class="header-tool" id="fontBtn" title="Alternar tamanho da fonte">FONTE: NORMAL</button>';
       meta.insertBefore(tools,meta.firstChild);
     }
   }
@@ -217,9 +247,40 @@
   const evidence=document.querySelector('.evidence-strip');
   if(evidence){evidence.children[0].innerHTML='<b>Recursos elegíveis de Governança</b> · mg-evertecbrasil';evidence.children[1].textContent='Subscriptions corporativas e recursos observados são universos separados';}
   evidence?.insertAdjacentHTML('afterend',`<div class="global-filter-bar" aria-label="Filtros rápidos globais"><div class="global-filter-title"><b>Filtros rápidos</b><span id="globalFilterCount"></span></div><label>AMBIENTE<select id="globalAmbiente"><option value="">Todos</option></select></label><label>BU<select id="globalBu"><option value="">Todas</option></select></label><label>CAPEX<select id="globalCapex"><option value="">Todos</option></select></label><label>TIPO<select id="globalType"><option value="">Todos</option></select></label><label class="global-search">BUSCAR<input id="globalSearch" type="search" placeholder="Recurso, RG, Subscription ou ID"></label><button class="action-btn" id="globalClear">Limpar</button></div>`);
+  document.querySelector('main>.wrap')?.insertAdjacentHTML('beforeend',`<section class="page inventory-page" id="p-inventory" hidden>
+    <div class="inventory-heading"><button class="action-btn" id="inventoryBack">← Voltar à visão anterior</button><div><span class="eyebrow">RASTREABILIDADE DA FOTOGRAFIA</span><h1>Inventário e justificativas da fotografia</h1><p id="inventoryOrigin" class="sub"></p></div></div>
+    <div class="grid inventory-totals" id="inventoryTotals"></div>
+    <div class="panel"><div class="hrow"><div><h2>Consultar inventário completo</h2><p class="sub">Filtros de Tags da visão de Governança não são aplicados aqui; assim, recursos sem Tags continuam localizáveis.</p></div><button class="action-btn primary" id="inventoryExport">Exportar resultado CSV</button></div><div class="inventory-filters"><label>TIPO<select id="inventoryType"><option value="">Todos</option></select></label><label>CLASSIFICAÇÃO<select id="inventoryClass"><option value="">Todas</option></select></label><label>SUBSCRIPTION<select id="inventorySubscription"><option value="">Todas</option></select></label><label>RESOURCE GROUP<select id="inventoryRg"><option value="">Todos</option></select></label><label class="inventory-search">BUSCAR<input id="inventorySearch" type="search" placeholder="Nome, motivo, regra ou ResourceId"></label><button class="action-btn" id="inventoryClear">Limpar</button></div></div>
+    <div class="grid inventory-summary-grid"><div class="panel c5"><h2>Resultado filtrado</h2><p class="sub">Relatório de reconciliação por classificação.</p><div class="tbl"><table id="inventoryReconciliation"></table></div></div><div class="panel c7"><h2>Resumo do detalhamento</h2><div class="inventory-summary-columns"><div><span class="eyebrow">POR TIPO</span><div id="inventoryByType"></div></div><div><span class="eyebrow">POR SUBSCRIPTION</span><div id="inventoryBySubscription"></div></div><div><span class="eyebrow">POR MOTIVO</span><div id="inventoryByReason"></div></div></div></div></div>
+    <div class="panel"><div class="hrow"><div><h2>Recursos e justificativas</h2><p class="sub" id="inventoryFilteredCount"></p></div></div><div class="tbl inventory-detail"><table id="inventoryTable"></table></div></div>
+  </section>`);
   function refreshGlobalFilterOptions(){const all=[];for(let i=0;i<N;i++)if(R.sc[i])all.push(i);const fill=(id,values,label,key)=>{const el=$(id),current=globalFilters[key],items=[...new Set(values.filter(Boolean))].sort((a,b)=>(key==='type'?typeLabel(a):a).localeCompare(key==='type'?typeLabel(b):b,'pt-BR'));el.innerHTML=`<option value="">${label}</option>`+items.map(x=>`<option value="${esc(x)}">${esc(key==='type'?typeLabel(x):x)}</option>`).join('');if([...el.options].some(o=>o.value===current))el.value=current};fill('globalAmbiente',all.map(i=>val('AMBIENTE',i)),'Todos','ambiente');fill('globalBu',all.map(i=>val('BU',i)),'Todas','bu');fill('globalCapex',all.map(i=>val('CAPEX',i)),'Todos','capex');fill('globalType',all.map(i=>DI.type[R.t[i]]),'Todos','type');$('globalFilterCount').textContent=`${fmt(eligibleIndexes().length)} recursos no universo atual`}
   function applyGlobalFilters(){globalFilters.ambiente=$('globalAmbiente').value;globalFilters.bu=$('globalBu').value;globalFilters.capex=$('globalCapex').value;globalFilters.type=$('globalType').value;globalFilters.search=$('globalSearch').value.trim().toLowerCase();$('globalFilterCount').textContent=`${fmt(eligibleIndexes().length)} recursos no universo atual`;detailOptions();render()}
   ['globalAmbiente','globalBu','globalCapex','globalType'].forEach(id=>$(id).addEventListener('change',applyGlobalFilters));let globalTimer;$('globalSearch').addEventListener('input',()=>{clearTimeout(globalTimer);globalTimer=setTimeout(applyGlobalFilters,160)});$('globalClear').addEventListener('click',()=>{Object.keys(globalFilters).forEach(k=>globalFilters[k]='');$('globalSearch').value='';refreshGlobalFilterOptions();detailOptions();render()});
+
+  let inventoryReturnPage='exec',inventoryFiltered=[];
+  const inventoryClasses=['Elegível','Fora do escopo','Excluído por regra','Aguardando classificação'];
+  function fillInventorySelect(id,items,allLabel,label=x=>x){const el=$(id),current=el.value;el.innerHTML=`<option value="">${allLabel}</option>`+[...new Set(items.filter(Boolean))].sort((a,b)=>label(a).localeCompare(label(b),'pt-BR')).map(x=>`<option value="${esc(x)}">${esc(label(x))}</option>`).join('');if([...el.options].some(o=>o.value===current))el.value=current}
+  function inventoryRowsFiltered(){const type=$('inventoryType').value,classification=$('inventoryClass').value,subscription=$('inventorySubscription').value,rg=$('inventoryRg').value,q=$('inventorySearch').value.trim().toLowerCase();return fullInventory().filter(r=>(!type||r.type===type)&&(!classification||r.classification===classification)&&(!subscription||r.subscription===subscription)&&(!rg||r.resourceGroup===rg)&&(!q||`${r.name} ${r.type} ${r.subscription} ${r.subscriptionId} ${r.resourceGroup} ${r.reason} ${r.rule} ${r.id}`.toLowerCase().includes(q)))}
+  function countGroups(rows,key){const m=new Map();for(const r of rows){const value=r[key]||'(não informado)';m.set(value,(m.get(value)||0)+1)}return [...m].sort((a,b)=>b[1]-a[1]||String(a[0]).localeCompare(String(b[0]),'pt-BR'))}
+  function renderMiniSummary(id,items,label=x=>x){$(id).innerHTML=items.slice(0,6).map(([name,n])=>`<div class="inventory-mini-row"><span title="${esc(name)}">${esc(label(name))}</span><strong>${fmt(n)}</strong></div>`).join('')||'<p class="muted">Nenhum registro.</p>'}
+  function renderInventory(){
+    const all=fullInventory(),totals=new Map(inventoryClasses.map(c=>[c,all.filter(r=>r.classification===c).length]));
+    $('inventoryOrigin').textContent=`Fotografia ${fmtDate(D.meta?.date)} · arquivo ${D.meta?.eligibleFile||D.meta?.scopeFile||D.meta?.fullFile||'origem não informada'} · total do Azure Resource Graph, não do Portal Azure`;
+    const totalCards=[['resource-graph.svg','Observados no ARG',all.length,'ResourceIds distintos'],['resource-graph.svg','Elegíveis',totals.get('Elegível'),'denominador dos indicadores'],['all-resources.svg','Fora do escopo',totals.get('Fora do escopo'),'classificados fora da atuação'],['maintenance.svg','Excluídos por regra',totals.get('Excluído por regra'),'preservados para rastreabilidade'],['monitor.svg','Aguardando classificação',totals.get('Aguardando classificação'),'fora dos indicadores até validação']];
+    $('inventoryTotals').innerHTML=totalCards.map(c=>`<div class="panel kpi inventory-total c-auto"><div class="kpi-head"><div><div class="eyebrow">${c[1]}</div><div class="v">${fmt(c[2])}</div></div>${icon(c[0])}</div><div class="d">${c[3]}</div></div>`).join('');
+    inventoryFiltered=inventoryRowsFiltered();const grouped=countGroups(inventoryFiltered,'classification').filter(([,n])=>n>0),sum=inventoryFiltered.length;
+    $('inventoryReconciliation').innerHTML=`<thead><tr><th>Classificação</th><th class="r">Quantidade</th><th class="r">% do resultado</th></tr></thead><tbody>${grouped.map(([name,n])=>`<tr><td>${esc(name)}</td><td class="r"><b>${fmt(n)}</b></td><td class="r">${pct(n,sum)}</td></tr>`).join('')}<tr class="inventory-total-row"><td><b>Total do resultado filtrado</b></td><td class="r"><b>${fmt(sum)}</b></td><td class="r"><b>${sum?'100,0%':'—'}</b></td></tr></tbody>`;
+    renderMiniSummary('inventoryByType',countGroups(inventoryFiltered,'type'),typeLabel);renderMiniSummary('inventoryBySubscription',countGroups(inventoryFiltered,'subscription'));renderMiniSummary('inventoryByReason',countGroups(inventoryFiltered,'reason'));
+    $('inventoryFilteredCount').textContent=`${fmt(sum)} ResourceIds distintos no resultado; a tabela exibe até 500 linhas e a exportação contém todos.`;
+    $('inventoryTable').innerHTML=`<thead><tr><th>Recurso</th><th>Tipo</th><th>Subscription</th><th>Resource Group</th><th>Elegibilidade</th><th>Classificação</th><th>Motivo</th><th>Regra</th><th>ResourceId</th></tr></thead><tbody>${inventoryFiltered.slice(0,500).map(r=>`<tr><td><b>${esc(r.name)}</b></td><td>${esc(typeLabel(r.type))}</td><td>${esc(r.subscription)}</td><td>${esc(r.resourceGroup)}</td><td><span class="pill ${r.eligibility==='SIM'?'ok':r.classification==='Aguardando classificação'?'warn':'n'}">${esc(r.eligibility||'(vazio)')}</span></td><td>${esc(r.classification)}</td><td>${esc(r.reason||'—')}</td><td>${esc(r.rule||'—')}</td><td class="num inventory-id" title="${esc(r.id)}">${esc(r.id)}</td></tr>`).join('')}</tbody>`;
+  }
+  function inventoryOptions(){const all=fullInventory();fillInventorySelect('inventoryType',all.map(r=>r.type),'Todos',typeLabel);fillInventorySelect('inventoryClass',inventoryClasses,'Todas');fillInventorySelect('inventorySubscription',all.map(r=>r.subscription),'Todas');fillInventorySelect('inventoryRg',all.map(r=>r.resourceGroup),'Todos')}
+  function openInventory(seed={}){inventoryReturnPage=page==='inventory'?inventoryReturnPage:page;page='inventory';document.querySelectorAll('section.page').forEach(s=>s.hidden=s.id!=='p-inventory');$('tabs').hidden=true;inventoryOptions();$('inventoryType').value=seed.type||'';$('inventoryClass').value=seed.classification||'';$('inventorySubscription').value=seed.subscription||'';$('inventoryRg').value=seed.resourceGroup||'';$('inventorySearch').value='';renderInventory();scrollTo({top:0,behavior:'smooth'})}
+  function closeInventory(){page=inventoryReturnPage||'exec';$('tabs').hidden=false;document.querySelectorAll('section.page').forEach(s=>s.hidden=s.id!==`p-${page}`);$('tabs').querySelectorAll('button').forEach(b=>b.setAttribute('aria-selected',b.dataset.p===page));render();scrollTo({top:0,behavior:'smooth'})}
+  $('scopeInventoryBtn').addEventListener('click',()=>openInventory({type:globalFilters.type}));$('inventoryBack').addEventListener('click',closeInventory);$('inventoryClear').addEventListener('click',()=>{for(const id of ['inventoryType','inventoryClass','inventorySubscription','inventoryRg','inventorySearch'])$(id).value='';renderInventory()});
+  for(const id of ['inventoryType','inventoryClass','inventorySubscription','inventoryRg'])$(id).addEventListener('change',renderInventory);let inventoryTimer;$('inventorySearch').addEventListener('input',()=>{clearTimeout(inventoryTimer);inventoryTimer=setTimeout(renderInventory,150)});
+  $('inventoryExport').addEventListener('click',()=>{const headers=['ResourceName','ResourceType','Subscription','SubscriptionId','ResourceGroup','ELEGIVEL_GOVERNANCA','CLASSE_INVENTARIO','ClassificacaoDashboard','MOTIVO_NAO_ELEGIVEL','REGRA_EXCLUSAO','ESCOPO_HIERARQUIA','ManagementGroups','ResourceId'],lines=[headers.map(csvCell).join(';'),...inventoryFiltered.map(r=>[r.name,r.type,r.subscription,r.subscriptionId,r.resourceGroup,r.eligibility,r.inventoryClass,r.classification,r.reason,r.rule,r.scope,r.managementGroups,r.id].map(csvCell).join(';'))];downloadText(`Inventario_Justificativas_${D.meta?.date||'sem_data'}.csv`,lines.join('\r\n'))});
 
   $('p-exec').innerHTML=`
     <div class="grid" id="execKpisV2"></div>
@@ -252,7 +313,8 @@
       ['solution.svg','PRODUTO classificado',pct(produto.cl,produto.n),`${fmt(produto.cl)} de ${fmt(produto.n)}`],
       ['dashboard.svg','Cobertura FOLIO',D.meta?.folioCollected?pct(folio.fill,folio.n):'—',D.meta?.folioCollected?`${fmt(folio.fill)} de ${fmt(folio.n)} CAPEX=SIM`:'FOLIO não coletado']
     ];
-    $('execKpisV2').innerHTML=cards.map(c=>`<div class="panel kpi c3"><div class="kpi-head"><div><div class="eyebrow">${c[1]}</div><div class="v">${typeof c[2]==='number'?fmt(c[2]):c[2]}</div></div>${icon(c[0])}</div><div class="d">${c[3]}</div></div>`).join('');
+    const inventoryScope=fullInventory().filter(r=>!globalFilters.type||r.type===globalFilters.type),complements=inventoryClasses.slice(1).map(classification=>[classification,inventoryScope.filter(r=>r.classification===classification).length]).filter(([,n])=>n>0);
+    $('execKpisV2').innerHTML=cards.map((c,index)=>`<div class="panel kpi c3"><div class="kpi-head"><div><div class="eyebrow">${c[1]}</div><div class="v">${typeof c[2]==='number'?fmt(c[2]):c[2]}</div></div>${icon(c[0])}</div><div class="d">${c[3]}</div>${index===4&&complements.length?`<div class="inventory-card-links">${complements.map(([classification,n])=>`<button type="button" data-inventory-class="${esc(classification)}">${fmt(n)} ${esc(classification.toLowerCase())}</button>`).join('')}</div><small class="inventory-filter-note">Complementos usam Tipo; filtros de Tags não ocultam excluídos.</small>`:''}</div>`).join('');
     $('stackTagsV2').innerHTML=TAGS.map(t=>stackRow(t,ix)).join('');
     const tm=new Map();for(const i of ix){const t=DI.type[R.t[i]];tm.set(t,(tm.get(t)||0)+1)}const top=[...tm].sort((a,b)=>b[1]-a[1]).slice(0,10);
     $('typesV2').innerHTML=top.map(([t,n])=>`<div class="type-row">${icon(resourceIcon(t).split('/').pop(),'sm')}<div class="name" title="${esc(t)}">${esc(typeLabel(t))}</div><div class="count">${fmt(n)}</div></div>`).join('');
@@ -262,6 +324,7 @@
     $('policyV2').innerHTML=`<div><div class="eyebrow">Geral</div><div class="kpi"><div class="v">≈98%</div></div><div class="gauge"><span style="width:98%"></span></div></div><div><div class="eyebrow">Tags</div><div class="kpi"><div class="v">100%</div></div><div class="gauge"><span style="width:100%"></span></div></div>`;
     renderSubscriptionListV2(ix,master);
   };
+  $('execKpisV2').addEventListener('click',event=>{const button=event.target.closest('[data-inventory-class]');if(button)openInventory({type:globalFilters.type,classification:button.dataset.inventoryClass})});
 
   function renderSubscriptionListV2(ix,master=masterSubscriptions()){
     const base=master.length?master.filter(x=>x.inScope):D.subs.filter(x=>x.inScope).map(x=>({name:x.name,id:x.id,status:'',managementGroup:'',inScope:true}));

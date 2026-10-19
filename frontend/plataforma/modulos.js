@@ -6,7 +6,7 @@
     { id: 'inicio', nome: 'Início', url: '/' },
     { id: 'rec', nome: 'Recomendações FinOps', url: '/recomendacoes' },
     { id: 'tags', nome: 'Governança de Tags', url: '/tags' },
-    { id: 'auditoria-vms', nome: 'Auditoria de Tags de VMs', emBreve: true }
+    { id: 'auditoria-vms', nome: 'Auditoria de Tags de VMs', url: '/auditoria-vms' }
   ];
   window.PLATAFORMA_MODULOS = MODULOS;
 

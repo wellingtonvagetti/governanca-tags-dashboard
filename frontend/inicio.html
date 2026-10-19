@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plataforma FinOps Evertec</title>
+<link rel="icon" type="image/png" href="/plataforma/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/plataforma/modulos.css">
+<style>
+:root{--cv-text:#14212F;--cv-muted:#4A5868;--cv-line:#E3E8ED;--cv-navy:#0B1B2E;--cv-orange:#FF6C0C;
+--cv-sans:'IBM Plex Sans',system-ui,sans-serif;--cv-mono:'IBM Plex Mono',ui-monospace,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:#F3F5F7;color:var(--cv-text);font-family:var(--cv-sans);font-size:14px}
+.topbar{background:var(--cv-navy)}
+.topbar-inner{max-width:1360px;margin:0 auto;padding:18px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:18px}
+.brand img{height:34px;display:block}
+.brand-mark{width:1px;height:24px;background:#2E4157}
+.brand-title{font-size:18px;font-weight:600;color:#fff}
+main{max-width:1360px;margin:0 auto;padding:28px 32px 24px}
+.eyebrow{font-family:var(--cv-mono);font-size:11px;letter-spacing:1px;color:var(--cv-muted)}
+h1{font-size:28px;font-weight:600;margin:6px 0}
+.sub{color:var(--cv-muted);font-size:15px;margin:0 0 26px;max-width:760px;line-height:1.5}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card{background:#fff;border-radius:12px;padding:22px 24px;border-top:4px solid var(--cv-orange);display:flex;flex-direction:column}
+.card.navy{border-top-color:var(--cv-navy)}
+.card.fut{border-top-color:#C3CCD6}
+.card .top{display:flex;justify-content:space-between;align-items:center}
+.chip{font-family:var(--cv-mono);font-size:10.5px;letter-spacing:.8px;padding:4px 9px;border-radius:999px;white-space:nowrap}
+.chip.ok{background:#E6F4EC;color:#1F7A4D}
+.chip.fut{background:#EEF1F4;color:var(--cv-muted)}
+.ico{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;margin:18px 0 14px}
+.card h2{font-size:19px;font-weight:600;margin:0 0 8px}
+.card p{color:var(--cv-muted);line-height:1.55;margin:0 0 20px;flex:1}
+.btn{display:flex;justify-content:center;align-items:center;gap:8px;padding:11px;border-radius:8px;background:var(--cv-navy);color:#fff;font-weight:500;text-decoration:none}
+.btn:hover{background:#13283F}
+.btn:focus-visible{outline:2px solid var(--cv-orange);outline-offset:2px}
+.btn.off{background:#fff;border:1px solid var(--cv-line);color:var(--cv-muted);cursor:default}
+.info{margin-top:16px;background:#fff;border-radius:12px;padding:14px 20px;color:var(--cv-muted);display:flex;gap:12px;align-items:center}
+.info b{color:var(--cv-navy)}
+footer{max-width:1360px;margin:0 auto;padding:0 32px 26px}
+footer .linha{border-top:1px solid var(--cv-line);padding-top:18px;display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--cv-muted);font-size:12.5px;flex-wrap:wrap}
+footer .l{display:flex;align-items:center;gap:10px}
+footer img{height:20px;display:block}
+@media (max-width:900px){.cards{grid-template-columns:1fr}.topbar-inner{flex-wrap:wrap;padding:14px 16px}main{padding:22px 16px}footer{padding:0 16px 22px}.brand-title{font-size:16px}}
+@media (max-width:520px){.brand-mark,.brand-title{display:none}.mod-dd-v5 summary{width:200px}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner">
+  <div class="brand"><img src="/plataforma/evertec.png" alt="Evertec"><div class="brand-mark"></div><span class="brand-title">Plataforma FinOps</span></div>
+  <div data-mod-seletor="inicio"></div>
+</div></header>
+
+<main>
+  <div class="eyebrow">PLATAFORMA FINOPS EVERTEC</div>
+  <h1>Uma plataforma, módulos especializados</h1>
+  <p class="sub">Gestão, otimização e governança de custos em nuvem. Cada módulo mantém seus próprios indicadores, escopo e data de atualização.</p>
+
+  <div class="cards">
+    <section class="card">
+      <div class="top"><span class="eyebrow">MÓDULO</span><span class="chip ok">● DISPONÍVEL</span></div>
+      <div class="ico" style="background:#FFF1E8" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="#FF6C0C"><rect x="3" y="13" width="4" height="8" rx="1"/><rect x="10" y="8" width="4" height="13" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg></div>
+      <h2>Recomendações FinOps</h2>
+      <p>Oportunidades de otimização, saving efetivo, execução pelas squads e chamados com SLA.</p>
+      <a class="btn" href="/recomendacoes">Acessar módulo →</a>
+    </section>
+    <section class="card navy">
+      <div class="top"><span class="eyebrow">MÓDULO</span><span class="chip ok">● DISPONÍVEL</span></div>
+      <div class="ico" style="background:#E8EDF3" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0B1B2E" stroke-width="2" stroke-linejoin="round"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.6" fill="#0B1B2E"/></svg></div>
+      <h2>Governança de Tags</h2>
+      <p>Qualidade, classificação e rastreabilidade das tags nos recursos elegíveis da governança.</p>
+      <a class="btn" href="/tags">Acessar módulo →</a>
+    </section>
+    <section class="card navy">
+      <div class="top"><span class="eyebrow">MÓDULO</span><span class="chip ok">● DISPONÍVEL</span></div>
+      <div class="ico" style="background:#E8EDF3" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0B1B2E" stroke-width="2"><rect x="3" y="4" width="14" height="10" rx="2"/><path d="M7 18h6"/><circle cx="17" cy="16" r="3.5"/><path d="m19.5 18.5 2.5 2.5" stroke-linecap="round"/></svg></div>
+      <h2>Auditoria de Tags de VMs</h2>
+      <p>Auditoria e conformidade do uso de tags em máquinas virtuais, com foco em governança e rastreabilidade.</p>
+      <a class="btn" href="/auditoria-vms">Acessar módulo →</a>
+    </section>
+  </div>
+
+  <div class="info"><b aria-hidden="true">ⓘ</b> O acesso aos módulos usa o seu login corporativo Microsoft.</div>
+</main>
+
+<footer><div class="linha">
+  <div class="l"><span>Desenvolvido por</span><img src="/plataforma/solo.png" alt="Solo Network"><span>para Evertec · Uso interno</span></div>
+  <span>Plataforma FinOps Evertec</span>
+</div></footer>
+
+<script src="/plataforma/modulos.js"></script>
+<script src="/plataforma/modulos-tags-vms.js"></script>
+</body>
+</html>

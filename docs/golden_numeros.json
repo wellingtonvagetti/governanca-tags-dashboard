@@ -1,0 +1,15 @@
+{
+  "2026-09": {
+    "competencia": "2026-09",
+    "linhas": 1750,
+    "linhas_nao_reprovadas": 1457,
+    "realizadas": 377,
+    "saving_est": 368645.34,
+    "saving": 190834.96,
+    "saving_efetivo": 143944.7,
+    "rescaldo_previsto": 44842.05,
+    "hash_linhas": "331a88b0cf95237505001561b4614f01f8e7af69f38f719be92f12f0d1ac6646",
+    "fechada": 1,
+    "triggers_fechamento": 3
+  }
+}

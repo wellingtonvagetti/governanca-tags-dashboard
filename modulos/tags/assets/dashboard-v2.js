@@ -1,8 +1,9 @@
 /* Dashboard executivo v2: universo único de recursos elegíveis + cadastro corporativo de subscriptions. */
 (function(){
   'use strict';
+  const vmAuditModule=document.body.dataset.module==='auditoria-vms';
   scope='esc';
-  const iconBase='/assets/azure-icons/';
+  const iconBase='/tags/assets/azure-icons/';
   const iconMap=[
     ['microsoft.compute/virtualmachines','virtual-machine.svg'],
     ['microsoft.compute/virtualmachines/extensions','extension.svg'],
@@ -208,14 +209,7 @@
 
   document.body.classList.add('scope-v2');
   const headerRow=document.querySelector('.top .hrow');
-  const oldBrandMark=document.querySelector('.evertec-mark');
-  if(oldBrandMark)oldBrandMark.remove();
   if(headerRow){
-    headerRow.insertAdjacentHTML('afterbegin',`<div class="partner-brand" aria-label="Solo Network e Evertec">
-      <a class="partner-logo-slot solo-slot" href="https://solonetwork.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Abrir site da Solo Network"><img id="soloThemeLogo" src="/assets/solo-white.png" alt="Solo Network"></a>
-      <span class="partner-amp" aria-hidden="true">&amp;</span>
-      <a class="partner-logo-slot evertec-slot" href="https://evertecinc.com/pt-br/" target="_blank" rel="noopener noreferrer" aria-label="Abrir site da Evertec"><img id="evertecThemeLogo" src="/assets/evertec-white.png" alt="Evertec"></a>
-    </div>`);
     const meta=headerRow.querySelector('.meta');
     if(meta){
       const tools=document.createElement('div');tools.className='header-tools';tools.setAttribute('aria-label','Controles de visualização');
@@ -224,11 +218,9 @@
     }
   }
 
-  const themeBtn=$('themeBtn'),fontBtn=$('fontBtn'),soloLogo=$('soloThemeLogo'),evertecLogo=$('evertecThemeLogo');
+  const themeBtn=$('themeBtn'),fontBtn=$('fontBtn');
   function applyTheme(theme){
     const dark=theme==='dark';document.body.classList.toggle('dark-theme',dark);
-    soloLogo.src='/assets/solo-white.png';
-    evertecLogo.src='/assets/evertec-white.png';
     themeBtn.textContent=dark?'DARK':'LIGHT';themeBtn.title=`Tema ${dark?'escuro':'claro'} ativo; clique para alternar`;themeBtn.setAttribute('aria-pressed',String(dark));
     try{localStorage.setItem('governanca-theme',dark?'dark':'light')}catch(_){ }
   }
@@ -440,6 +432,9 @@
   $('buccTbl').addEventListener('click',e=>{const b=e.target.closest('[data-official-drill]');if(!b)return;const cc=b.dataset.cc,bu=b.dataset.buCurrent,rules=[{field:'CC',op:'eq',value:cc},{field:'BU',op:'eq',value:bu}],offBu=b.dataset.buOfficial,offOwner=b.dataset.ownerOfficial;let label=`CC ${cc} · BU atual ${bu}`;if(offBu)label+=` → BU oficial ${offBu}`;if(offOwner)label+=` · CCOWNER oficial ${offOwner}`;openAdvancedPreset(label,i=>norm(val('CC',i))===norm(cc)&&norm(val('BU',i))===norm(bu),rules)});
 
   /* ================= AUDITORIA DE TAGS DE VMs ================= */
+  /* A auditoria possui rota propria (/auditoria-vms). Ela nao e mais uma guia
+     permanente do modulo de Governanca de Tags. */
+  if(vmAuditModule){
   const vmTab=document.createElement('button');vmTab.type='button';vmTab.setAttribute('role','tab');vmTab.dataset.p='vm';vmTab.setAttribute('aria-selected','false');vmTab.textContent='Auditoria de VMs';$('tabs').insertBefore(vmTab,$('tabs').querySelector('[data-p="evo"]'));
   document.querySelector('main>.wrap')?.insertAdjacentHTML('beforeend',`<section class="page vm-audit-page" id="p-vm" hidden>
     <div class="vm-audit-heading"><div><h1>Auditoria operacional de VMs</h1></div></div>
@@ -465,8 +460,6 @@
   }
   const vmRuleDefs=[['FULL em DEV/HML','FULL em DEV ou HML','DISPONIBILIDADE=FULL não é recomendada nesses ambientes.'],['START/STOP em FULL','START ou STOP preenchido em FULL','FULL não requer agendamento operacional.'],['START/STOP obrigatório em PARCIAL','PARCIAL sem START/STOP','PARCIAL precisa das duas Tags preenchidas.'],['STOP obrigatório em SOBDEMANDA/DISTRATO','STOP em SOBDEMANDA/DISTRATO','SOBDEMANDA e DISTRATO exigem STOP.'],['ENDOFLIFE vazio ou inválido','ENDOFLIFE inválido','ENDOF LIFE deve ter valor válido.']];
   const vmMatch=(value,filter)=>!filter||(filter==='__EMPTY__'?String(value??'').trim()==='':String(value??'')===filter);
-  const vmWaveGroups={WAVE1:['WAVE1','WAVEPIX1','WAVESIMPLY1','WAVESCAF1','WAVEAD1','WAVEDB1'],WAVE2:['WAVE2','WAVEPIX2','WAVESIMPLY2','WAVESCAF2','WAVEAD2','WAVEDB2'],WAVE3:['WAVE3','WAVEPIX3','WAVESIMPLY3','WAVESCAF3','WAVEAD3','WAVEDB3'],WAVE4:['WAVE4','WAVEPIX4','WAVESIMPLY4','WAVESCAF4','WAVEAD4','WAVEDB4']};
-  const vmWaveGroup=value=>Object.entries(vmWaveGroups).find(([,values])=>values.includes(norm(value)))?.[0]||'';
   function vmFiltered(){const env=$('vmEnv').value,availability=$('vmAvailability').value,wave=$('vmWave').value,eol=$('vmEol').value,bu=$('vmBu').value,sub=$('vmSub').value,rg=$('vmRg').value,q=$('vmSearch').value.trim().toLowerCase();return vmBase().filter(i=>{const sv=D.subs[R.s[i]]?.name||'',rv=D.rgs[R.g[i]]?.[0]||'';return vmMatch(vmValue('AMBIENTE',i),env)&&vmMatch(vmValue('DISPONIBILIDADE',i),availability)&&vmMatch(vmValue('WAVE',i),wave)&&vmMatch(vmValue('ENDOFLIFE',i),eol)&&vmMatch(vmValue('BU',i),bu)&&vmMatch(sv,sub)&&vmMatch(rv,rg)&&(!q||`${R.n[i]} ${R.id[i]} ${sv} ${rv}`.toLowerCase().includes(q))})}
   function fillVmSelect(id,values,label){const el=$(id),current=el.value,items=[...new Set(values.filter(v=>v!=null&&v!==''))].sort((a,b)=>String(a).localeCompare(String(b),'pt-BR'));el.innerHTML=`<option value="">${label}</option><option value="__EMPTY__">Vazio</option>`+items.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');if(current==='__EMPTY__'||items.includes(current))el.value=current}
   function vmOptions(){const ix=vmBase();fillVmSelect('vmEnv',ix.map(i=>vmValue('AMBIENTE',i)),'Todos');fillVmSelect('vmAvailability',ix.map(i=>vmValue('DISPONIBILIDADE',i)),'Todas');fillVmSelect('vmWave',ix.map(i=>vmValue('WAVE',i)),'Todas');fillVmSelect('vmEol',ix.map(i=>vmValue('ENDOFLIFE',i)),'Todos');fillVmSelect('vmBu',ix.map(i=>vmValue('BU',i)),'Todas');fillVmSelect('vmSub',ix.map(i=>D.subs[R.s[i]]?.name),'Todas');fillVmSelect('vmRg',ix.map(i=>D.rgs[R.g[i]]?.[0]),'Todos')}
@@ -480,7 +473,8 @@
     $('vmRules').innerHTML=vmRuleDefs.map(([key,title,desc])=>{const n=ix.filter(i=>vmViolations(i).includes(key)).length;return `<button class="vm-rule-card ${n?'has-issues':'ok'}" type="button" data-vm-rule="${esc(key)}"><span class="eyebrow">${esc(title)}</span><strong>${fmt(n)}</strong><small>${esc(desc)}</small><em>${n?'Ver VMs →':'Nenhuma pendência'}</em></button>`}).join('');
     const availabilityRows=[['FULL','Ausente','Ausente','Operação contínua'],['PARCIAL','Obrigatório','Obrigatório','Janela programada'],['SOBDEMANDA','Ausente','Obrigatório','Desligamento controlado'],['DISTRATO','Ausente','Obrigatório','Desligamento por encerramento']];$('vmAvailabilityMatrix').innerHTML=`<thead><tr><th>DISPONIBILIDADE</th><th>START</th><th>STOP</th><th>Expectativa</th><th class="r">VMs</th></tr></thead><tbody>${availabilityRows.map(([a,s,t,d])=>`<tr><td><b>${a}</b></td><td>${s}</td><td>${t}</td><td>${d}</td><td class="r">${fmt(ix.filter(i=>norm(vmValue('DISPONIBILIDADE',i))===a).length)}</td></tr>`).join('')}</tbody>`;
     const envs=['DEV','HML','PRD'];$('vmEnvironmentMatrix').innerHTML=`<thead><tr><th>AMBIENTE</th><th class="r">FULL</th><th class="r">PARCIAL</th><th class="r">SOBDEMANDA</th><th class="r">DISTRATO</th><th class="r">Sem DISP.</th></tr></thead><tbody>${envs.map(e=>`<tr><td><b>${e}</b></td>${['FULL','PARCIAL','SOBDEMANDA','DISTRATO'].map(a=>`<td class="r ${['DEV','HML'].includes(e)&&a==='FULL'?'vm-red':''}">${fmt(ix.filter(i=>norm(vmValue('AMBIENTE',i))===e&&norm(vmValue('DISPONIBILIDADE',i))===a).length)}</td>`).join('')}<td class="r">${fmt(ix.filter(i=>norm(vmValue('AMBIENTE',i))===e&&!vmIsFilled('DISPONIBILIDADE',i)).length)}</td></tr>`).join('')}</tbody>`;
-    const waves=['WAVE1','WAVE2','WAVE3','WAVE4'];$('vmWaveMatrix').innerHTML=`<thead><tr><th>GRUPO WAVE</th><th class="r">DEV</th><th class="r">HML</th><th class="r">PRD</th><th class="r">Total</th></tr></thead><tbody>${waves.map(w=>`<tr><td><b>${w}</b><small class="vm-wave-aliases">${vmWaveGroups[w].join(' · ')}</small></td>${['DEV','HML','PRD'].map(e=>`<td class="r">${fmt(ix.filter(i=>vmWaveGroup(vmValue('WAVE',i))===w&&norm(vmValue('AMBIENTE',i))===e).length)}</td>`).join('')}<td class="r">${fmt(ix.filter(i=>vmWaveGroup(vmValue('WAVE',i))===w).length)}</td></tr>`).join('')}<tr><td><b>NAO SE APLICA</b></td>${['DEV','HML','PRD'].map(e=>`<td class="r">${fmt(ix.filter(i=>norm(vmValue('WAVE',i))==='NAO SE APLICA'&&norm(vmValue('AMBIENTE',i))===e).length)}</td>`).join('')}<td class="r">${fmt(ix.filter(i=>norm(vmValue('WAVE',i))==='NAO SE APLICA').length)}</td></tr><tr><td><b>Sem WAVE</b></td><td class="r" colspan="3">—</td><td class="r"><b>${fmt(missingWave.length)}</b></td></tr></tbody>`;
+    const vmWaveGroups={WAVE1:['WAVE1','WAVEPIX1','WAVESIMPLY1','WAVESCAF1','WAVEAD1','WAVEDB1'],WAVE2:['WAVE2','WAVEPIX2','WAVESIMPLY2','WAVESCAF2','WAVEAD2','WAVEDB2'],WAVE3:['WAVE3','WAVEPIX3','WAVESIMPLY3','WAVESCAF3','WAVEAD3','WAVEDB3'],WAVE4:['WAVE4','WAVEPIX4','WAVESIMPLY4','WAVESCAF4','WAVEAD4','WAVEDB4']};const vmWaveGroup=value=>Object.entries(vmWaveGroups).find(([,values])=>values.includes(norm(value)))?.[0]||'';
+    const waves=['WAVE1','WAVE2','WAVE3','WAVE4'];$('vmWaveMatrix').innerHTML=`<thead><tr><th>GRUPO WAVE</th><th class="r">DEV</th><th class="r">HML</th><th class="r">PRD</th><th class="r">Total</th></tr></thead><tbody>${waves.map(w=>`<tr><td><div class="vm-wave-group"><b>${w}</b></div><small class="vm-wave-aliases">${vmWaveGroups[w].join(' · ')}</small></td>${['DEV','HML','PRD'].map(e=>`<td class="r">${fmt(ix.filter(i=>vmWaveGroup(vmValue('WAVE',i))===w&&norm(vmValue('AMBIENTE',i))===e).length)}</td>`).join('')}<td class="r">${fmt(ix.filter(i=>vmWaveGroup(vmValue('WAVE',i))===w).length)}</td></tr>`).join('')}<tr><td><b>NAO SE APLICA</b></td>${['DEV','HML','PRD'].map(e=>`<td class="r">${fmt(ix.filter(i=>norm(vmValue('WAVE',i))==='NAO SE APLICA'&&norm(vmValue('AMBIENTE',i))===e).length)}</td>`).join('')}<td class="r">${fmt(ix.filter(i=>norm(vmValue('WAVE',i))==='NAO SE APLICA').length)}</td></tr><tr><td><b>Sem WAVE</b></td><td class="r" colspan="3">—</td><td class="r"><b>${fmt(missingWave.length)}</b></td></tr></tbody>`;
     $('vmTagCoverage').innerHTML=vmFields.map(tag=>{const n=ix.filter(i=>vmIsFilled(tag,i)).length;return `<div class="vm-tag-row"><span>${tag}</span><div><i style="width:${ix.length?100*n/ix.length:0}%"></i></div><b>${pct(n,ix.length)}</b><small>${fmt(n)}</small></div>`}).join('');
     const trace=vmInventoryClass?vmTraceFiltered():null;
     $('vmDetailSummary').textContent=trace?`${fmt(trace.length)} VMs ${vmInventoryClass.toLowerCase()} exibidas; justificativas preservadas da fotografia. Filtros de Tags não são aplicados a itens fora dos indicadores.`:`${fmt(ix.length)} VMs exibidas; ${fmt(bad.length)} possuem uma ou mais regras em não conformidade. Tabela limitada a 500 linhas.`;
@@ -494,6 +488,7 @@
   vmOptions();renderVmAudit();
   const renderWithVmAudit=render;
   render=function(){if(page==='vm'){vmOptions();renderVmAudit();return}renderWithVmAudit();if($('p-vm')){vmOptions();renderVmAudit()}};
+  }
   $('advancedContext').addEventListener('click',e=>{if(!e.target.closest('#clearAdvancedPreset'))return;advancedPreset=null;renderAdvanced()});
   $('advancedKpis').addEventListener('click',e=>{const card=e.target.closest('[data-advanced-level]');if(!card)return;$('advancedLevel').value=card.dataset.advancedLevel;renderAdvanced(true);$('advancedTable').closest('.panel').scrollIntoView({behavior:'smooth',block:'start'})});
   renderEvo=renderAdvanced;$('advancedAdd').addEventListener('click',()=>{advancedPreset=null;advancedRules.push({field:'AMBIENTE',op:'eq',value:'PRD'});renderAdvanced()});$('advancedClear').addEventListener('click',()=>{advancedPreset=null;advancedRules=[];$('advancedSearch').value='';renderAdvanced()});$('advancedRules').addEventListener('input',e=>{const row=e.target.closest('[data-rule]');if(!row||e.target.dataset.key!=='value')return;advancedPreset=null;advancedRules[+row.dataset.rule].value=e.target.value;renderAdvanced(true)});$('advancedRules').addEventListener('change',e=>{const row=e.target.closest('[data-rule]');if(!row)return;advancedPreset=null;advancedRules[+row.dataset.rule][e.target.dataset.key]=e.target.value;renderAdvanced()});$('advancedRules').addEventListener('click',e=>{const b=e.target.closest('[data-remove-rule]');if(!b)return;advancedPreset=null;advancedRules.splice(+b.dataset.removeRule,1);renderAdvanced()});$('advancedLogic').addEventListener('change',()=>renderAdvanced());$('advancedLevel').addEventListener('change',()=>renderAdvanced(true));let advancedTimer;$('advancedSearch').addEventListener('input',()=>{clearTimeout(advancedTimer);advancedTimer=setTimeout(()=>renderAdvanced(true),150)});$('advancedExport').addEventListener('click',()=>{const ix=advancedIndexes(),map=new Map((governanceConfig.officialMap||[]).map(x=>[norm(x.CC),x])),headers=['ResourceId','Subscription','ResourceGroup','ResourceName','ResourceType',...TAGS,'BU_OFICIAL','CCOWNER_OFICIAL','STATUS_MAPA_OFICIAL'],lines=[headers.map(csvCell).join(';'),...ix.map(i=>{const off=map.get(norm(val('CC',i))),buBad=!!off&&norm(val('BU',i))!==norm(off.BU),ownerBad=!!off&&!!off.CCOWNER&&norm(val('CCOWNER',i))!==norm(off.CCOWNER),status=!off?'CC SEM MAPEAMENTO':buBad&&ownerBad?'BU E CCOWNER DIVERGENTES':buBad?'BU DIVERGENTE':ownerBad?'CCOWNER DIVERGENTE':'CONFORME';return [R.id[i],D.subs[R.s[i]].name,D.rgs[R.g[i]][0],R.n[i],DI.type[R.t[i]],...TAGS.map(t=>val(t,i)||''),off?.BU||'',off?.CCOWNER||'',status].map(csvCell).join(';')})];downloadText(`Analise_Avancada_${D.meta?.date||'sem_data'}.csv`,lines.join('\r\n'))});
@@ -515,11 +510,19 @@
   Object.keys(globalFilters).forEach(key=>globalFilters[key]='');
   advancedPreset=null;advancedRules=[];selSub=null;selRg=null;
   for(const id of ['globalAmbiente','globalBu','globalCapex','globalType','globalSearch','detSubV2','detRgV2','detTypeV2','detPendV2','detSearchV2','advancedSearch']){const control=$(id);if(control){if(control.type==='checkbox')control.checked=false;else control.value=''}}
-  page='exec';$('tabs').querySelectorAll('button').forEach(button=>button.setAttribute('aria-selected',button.dataset.p==='exec'));document.querySelectorAll('section.page').forEach(section=>section.hidden=section.id!=='p-exec');
+  page=vmAuditModule?'vm':'exec';
+  if(vmAuditModule){
+    document.title='Auditoria de Tags de VMs — Evertec';
+    $('moduleBrandTitle').textContent='FinOps · Auditoria de Tags de VMs';
+    $('scopeSeg').hidden=true;
+    document.querySelector('.evidence-strip').hidden=true;
+    $('tabs').querySelectorAll('button:not([data-p="vm"])').forEach(button=>button.remove());
+  }
+  $('tabs').querySelectorAll('button').forEach(button=>button.setAttribute('aria-selected',button.dataset.p===page));document.querySelectorAll('section.page').forEach(section=>section.hidden=section.id!==`p-${page}`);
 
   const originalLoad=loadGovernanceConfig;
   loadGovernanceConfig=async function(){await originalLoad();detailOptions();render()};
   refreshGlobalFilterOptions();detailOptions();render();
-  fetch('/api/governance-config').then(response=>response.ok?response.json():null).then(config=>{if(config){governanceConfig=config;detailOptions();render()}}).catch(()=>{});
+  fetch('/api/tags/governance-config').then(response=>response.ok?response.json():null).then(config=>{if(config){governanceConfig=config;detailOptions();render()}}).catch(()=>{});
   requestAnimationFrame(()=>document.body.classList.remove('v2-loading'));
 })();

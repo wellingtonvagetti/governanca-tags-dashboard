@@ -1,0 +1,30 @@
+{
+  "_leia": "Copie para ambiente.json (ignorado pelo Git) e preencha. Nomes de app e SQL precisam ser unicos no Azure inteiro.",
+
+  "subscription_id": "00000000-0000-0000-0000-000000000000",
+  "tenant_id": "00000000-0000-0000-0000-000000000000",
+  "resource_group": "rg-dash-rec-finops",
+  "location": "brazilsouth",
+  "tags": { "AMBIENTE": "DEV", "BU": "", "CCOWNER": "" },
+
+  "plan_name": "asp-dash-rec-finops",
+  "plan_sku": "B1",
+  "app_name": "app-dash-rec-finops",
+  "always_on": true,
+  "log_retention_days": 7,
+
+  "sql_server": "sql-dash-rec-finops",
+  "sql_location": "brazilsouth",
+  "sql_db": "sqldb-dash-rec-finops",
+  "sql_admin": "dashadmin",
+
+  "logic_name": "logic-dash-rec-finops",
+  "logic_location": "brazilsouth",
+  "mail_connector": "office365",
+  "mail_connection": "con-office365-dash-rec-finops",
+
+  "auth_client_id": "",
+  "auth_app_display_name": "app-dash-rec-finops",
+
+  "git_ref": "origin/main"
+}

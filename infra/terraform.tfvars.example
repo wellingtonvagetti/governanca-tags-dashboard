@@ -1,0 +1,17 @@
+# Copie para terraform.tfvars (ignorado pelo Git) e preencha.
+# Para o POC, use um RG NOVO e um app_name novo para comparar com o ambiente
+# atual sem sobrescrever nada.
+
+subscription_id     = "00000000-0000-0000-0000-000000000000"
+tenant_id           = "00000000-0000-0000-0000-000000000000"
+resource_group_name = "rg-dash-recomendacao-tf"
+app_name            = "dash-recomendacao-rb-tf"
+plan_name           = "plan-dash-rec-tf"
+
+# App Registration EXISTENTE (com consent ja concedido). Nao e criada aqui.
+auth_client_id = "00000000-0000-0000-0000-000000000000"
+# auth_allowed_audiences = ["api://00000000-0000-0000-0000-000000000000"]
+
+# Empresa: ajustar regiao, always_on = true, tags obrigatorias e outlook_api_name.
+# always_on = true
+# tags = { BU = "...", CCOWNER = "...", AMBIENTE = "..." }

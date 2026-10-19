@@ -1,0 +1,6 @@
+# Falsos positivos do gitleaks (generic-api-key) em commits antigos: COL_WIDTHS_KEY era o nome da
+# chave do localStorage com a largura das colunas, nao um segredo. Renomeado para COL_WIDTHS_ITEM.
+abc84c48c0c13ebf22c2238ba08967085ea5d918:frontend/index.html:generic-api-key:18425
+b3d4c2c47dfd9809041766780d498624368d6f79:frontend/index_broken_v187_20261003_020446.html:generic-api-key:11653
+b3d4c2c47dfd9809041766780d498624368d6f79:frontend/index.html.bak_encoding_20261003_004714:generic-api-key:10713
+0dfd5982e5e9d0abe3e3f910edf4454b81a4d045:frontend/index.html:generic-api-key:10569

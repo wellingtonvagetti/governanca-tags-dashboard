@@ -1,0 +1,11 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!terraform.tfvars.example
+crash.log
+*.tfplan
+tf.plan
+
+# configuracao real do ambiente da empresa (subscription, nomes)
+empresa/ambiente.json

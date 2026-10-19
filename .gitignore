@@ -1,0 +1,69 @@
+# Ambiente Python
+.venv/
+__pycache__/
+*.pyc
+
+# Segredos
+.env
+.env.*
+!.env.example
+
+# Dados reais FinOps
+data/custos/
+data/setembro_2026.json
+data/outubro_2026.json
+data/portable_state_dev.json
+data/payload_dev.json
+data/embedded_costs_dev.b64
+
+# Configuração operacional real
+config/squads.json
+
+# Backup original com dados
+frontend/dashboard_finops_baseline.html
+
+# Arquivos de importação
+*.csv
+*.xlsx
+
+# Backups
+*backup*.html
+*.bak
+*.zip
+
+# VS Code
+.vscode/
+
+# Sistema
+.DS_Store
+Thumbs.db
+database/*.db
+database/*.db-shm
+database/*.db-wal
+api/main_pre_*.py
+frontend/index_pre_*.html
+backups/
+auditoria_*.txt
+
+# BACKUPS E AUDITORIAS TEMPORARIAS
+frontend/index.html.bak_*
+frontend/dashboard_finops_backup_*.html
+contexto_finops.txt
+auditoria_*.csv
+
+# Backups temporarios do desenvolvimento
+frontend/index.html.before_*
+frontend/index*.tmp.html
+database/finops_dev.bak_*
+database/finops_dev.before_*
+database/*.tmp.db
+database/finops_dev_pre_*.db
+
+
+*.before_v321_*
+*.before_freeze_*
+
+*.before_cloud_*
+
+# Dados do modulo Governanca de Tags (inventario Azure)
+data/modulos/

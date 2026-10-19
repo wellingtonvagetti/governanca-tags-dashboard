@@ -1,0 +1,82 @@
+name: infra
+
+# plan: roda em PR que mexe em infra/ (OIDC subject: pull_request)
+# apply: roda no push para main ou manual, SOMENTE no environment "poc"
+#        (OIDC subject: environment:poc) e SOMENTE com state remoto pronto.
+
+on:
+  pull_request:
+    paths: ["infra/**", ".github/workflows/infra.yml"]
+  push:
+    branches: [main]
+    paths: ["infra/**", ".github/workflows/infra.yml"]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ARM_USE_OIDC: "true"
+  ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  TF_VAR_subscription_id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  TF_VAR_tenant_id: ${{ vars.AZURE_TENANT_ID }}
+  TF_VAR_resource_group_name: ${{ vars.TF_RESOURCE_GROUP }}
+  TF_VAR_app_name: ${{ vars.TF_APP_NAME }}
+  TF_VAR_plan_name: ${{ vars.TF_PLAN_NAME }}
+  TF_VAR_auth_client_id: ${{ vars.EASYAUTH_CLIENT_ID }}
+  # Senha do SQL: ignorada pelo Terraform (ignore_changes). Sem o secret, usa valor so para o plan.
+  TF_VAR_sql_admin_password: ${{ secrets.SQL_ADMIN_PASSWORD || 'apenas-para-plan-Aa1!' }}
+  TF_IN_AUTOMATION: "true"
+
+defaults:
+  run:
+    working-directory: infra
+
+jobs:
+  plan:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - run: terraform init -input=false
+      - run: terraform fmt -check -recursive
+      - run: terraform validate
+      - run: terraform plan -input=false -no-color
+
+  apply:
+    # Trava de seguranca: so aplica quando o state remoto estiver configurado.
+    # Sem backend, o runner perde o state e o proximo apply tentaria recriar tudo.
+    # Defina a variable TF_BACKEND_READY=true so depois da secao 5 do infra/README.md (state remoto).
+    if: github.event_name != 'pull_request' && vars.TF_BACKEND_READY == 'true'
+    runs-on: ubuntu-latest
+    environment: poc
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - run: terraform init -input=false
+      - run: terraform validate
+      - run: terraform plan -input=false -no-color -out=tf.plan
+      - run: terraform apply -input=false tf.plan
+
+      # O segredo do Easy Auth fica fora do Terraform (nao entra no state).
+      - name: Easy Auth secret
+        env:
+          SECRET: ${{ secrets.EASYAUTH_CLIENT_SECRET }}
+        run: |
+          az webapp config appsettings set \
+            -g "${{ vars.TF_RESOURCE_GROUP }}" -n "${{ vars.TF_APP_NAME }}" \
+            --settings MICROSOFT_PROVIDER_AUTHENTICATION_SECRET="$SECRET" -o none

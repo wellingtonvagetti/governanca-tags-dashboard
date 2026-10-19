@@ -1,0 +1,1090 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<style>
+.evidence-strip{display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface);border-left:4px solid var(--accent);padding:12px 16px;margin:0 0 20px;color:var(--muted);font-size:12px;border-radius:6px}
+.evidence-strip button{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px;color:var(--ink);cursor:pointer;font:inherit}
+@media print{.top{position:static!important}.meta,.tabs,.ctrls,.evidence-strip button{display:none!important}.page[hidden]{display:none!important}.panel{box-shadow:none!important;break-inside:avoid}.scroll{max-height:none!important;overflow:visible!important}body{background:#fff!important}.wrap{max-width:none!important}main{padding-top:15px!important}#tip{display:none!important}}
+</style>
+<style>
+.import-box summary{cursor:pointer;font-weight:600;font-size:16px;padding:4px 0}.import-box[open] summary{margin-bottom:12px}
+.import-fields{display:grid;grid-template-columns:1fr 1fr 180px;gap:16px;margin:16px 0}.import-fields label{display:flex;flex-direction:column;gap:8px;color:var(--ink);font-size:13px}.import-fields input{padding:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;min-width:0;font:inherit;color:var(--ink)}
+.import-action{background:var(--accent);color:#fff;border:1px solid var(--accent);border-radius:6px;padding:11px 16px;font:600 14px var(--f-body);cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.14)}.import-action:hover{filter:brightness(.92)}.import-action:focus-visible{outline:3px solid var(--accent-soft);outline-offset:2px}.import-action:disabled{opacity:.6;cursor:wait}.save-row{display:flex;justify-content:space-between;align-items:center;gap:20px;margin:16px 0 24px;color:var(--muted);font-size:13px}#importMessage{font-weight:500;overflow-wrap:anywhere}
+@media(max-width:900px){.import-fields{grid-template-columns:1fr}.save-row{align-items:flex-start;flex-direction:column}}@media print{.import-box,.save-row{display:none!important}}
+.v2-loading{overflow:hidden}.v2-loading>.top,.v2-loading>main,.v2-loading>.corporate-footer{visibility:hidden}.v2-loading:before{content:"";position:fixed;inset:0;z-index:99998;background:#0d1d31}.v2-loading:after{content:"Preparando Governança de Tags e FinOps…";position:fixed;z-index:99999;left:50%;top:50%;transform:translate(-50%,-50%);padding:54px 24px 0;color:#fff;background:radial-gradient(circle at 50% 18px,#ff5a1f 0 5px,transparent 6px);font:600 14px var(--f-body);letter-spacing:.03em;white-space:nowrap}
+</style><link rel="icon" type="image/png" href="/tags/assets/favicon.png?v=20261019-01"><link rel="stylesheet" href="/tags/assets/dashboard-v2.css?v=20261019-01"><link rel="stylesheet" href="/plataforma/modulos.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head><body class="v2-loading">
+<title>Dashboard Executivo — Governança de Tags e FinOps Evertec</title>
+
+
+<style>
+/* Layout: cabeçalho fixo com seletor de escopo + abas; cada aba é uma grade de painéis que vira 1 coluna no celular */
+:root{
+  --bg:#f4f6f8; --surface:#ffffff; --surface-2:#eef1f4; --ink:#10233f; --muted:#5d6d7e; --faint:#8592a1; --line:#d9e0e7;
+  --accent:#f45a1f; --accent-soft:#fff0e8;
+  --ok:#17845f; --warn:#c17b00; --bad:#c94443; --ok-soft:#e3f3ec; --warn-soft:#fff2d8; --bad-soft:#fbe6e5;
+  --seq-1:#ffe0d2; --seq-2:#ffad88; --seq-3:#f45a1f; --seq-4:#c83d0d; --seq-5:#7f260c;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-disp:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --r:9px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:linear-gradient(180deg,#f8fafb 0,#f4f6f8 260px);color:var(--ink);font:14px/1.5 var(--f-body);margin:0}
+.wrap{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:0 48px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:linear-gradient(110deg,#132a45 0%,#0c192a 72%,#081321 100%);border-bottom:1px solid #243b54;box-shadow:0 4px 18px rgba(8,19,33,.14)}
+.evertec-mark{position:absolute;left:20px;top:20px;width:min(260px,calc((100vw - 1320px)/2 - 28px));height:58px;object-fit:contain;object-position:left center;filter:brightness(1.35) contrast(1.05)}
+@media(max-width:1599px){.evertec-mark{position:static;display:block;width:180px;height:36px;margin:12px 20px 0}}@media(max-width:520px){.evertec-mark{width:150px;height:30px;margin-inline:16px}}
+.top .wrap{padding-block:14px 0;display:flex;flex-direction:column;gap:12px}
+.hrow{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:18px;min-height:42px}.brand-logo{display:flex;align-items:center;padding-right:18px;border-right:1px solid rgba(174,189,203,.34);line-height:0}.brand-logo img{display:block;width:157px;height:auto}.brand h1{font:700 18px/1.15 var(--f-disp);margin:0;text-wrap:balance;color:#fff}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg{display:inline-flex;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.17);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;color:#b8c5d2;font:500 12.5px var(--f-body);padding:6px 12px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:rgba(255,255,255,.13);color:#fff;box-shadow:inset 3px 0 0 var(--accent),0 1px 2px rgba(0,0,0,.18)}
+.chip{display:inline-flex;align-items:center;gap:6px;font:500 11.5px var(--f-mono);padding:4px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--surface)}
+.chip.warn{border-color:transparent;background:var(--warn-soft);color:var(--ink)}
+.chip.bad{border-color:transparent;background:var(--bad-soft);color:var(--ink)}
+.chip.ok{border-color:transparent;background:var(--ok-soft);color:var(--ink)}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+nav.tabs button{border:0;background:none;color:#b8c5d2;font:500 13.5px var(--f-body);padding:9px 14px 11px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:#fff;border-bottom-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,.click:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main .wrap{padding-top:22px}
+section.page{display:flex;flex-direction:column;gap:18px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(12,minmax(0,1fr))}
+.c12{grid-column:span 12}.c8{grid-column:span 8}.c7{grid-column:span 7}.c6{grid-column:span 6}.c5{grid-column:span 5}.c4{grid-column:span 4}.c3{grid-column:span 3}
+@media (max-width:980px){.c8,.c7,.c6,.c5,.c4{grid-column:span 12}.c3{grid-column:span 6}}
+@media (max-width:700px){.brand{gap:10px}.brand-logo{padding-right:10px}.brand-logo img{width:120px}.brand h1{font-size:15px}}@media (max-width:520px){.c3{grid-column:span 12}.wrap{padding-inline:16px}.brand h1{font-size:14px}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;min-width:0;box-shadow:0 5px 18px rgba(16,35,63,.045)}
+.panel.kpi{border-top:3px solid var(--accent)}
+.panel h2{font:600 15px/1.3 var(--f-body);margin:0 0 2px;text-wrap:balance}
+.panel .sub{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+.eyebrow{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.kpi .v{font:600 34px/1.05 var(--f-disp);font-variant-numeric:tabular-nums;margin-top:6px}
+.kpi .d{color:var(--muted);font-size:12.5px;margin-top:4px}
+.kpi .v small{font-size:15px;color:var(--muted);font-weight:500;margin-left:4px}
+.num{font-variant-numeric:tabular-nums;font-family:var(--f-mono);font-size:12.5px}
+.sect-h{display:flex;align-items:baseline;gap:10px;margin:6px 0 -4px}
+.sect-h h3{font:600 18px var(--f-disp);margin:0}
+.sect-h span{color:var(--muted);font-size:12.5px}
+/* stacked bars */
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);margin-bottom:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.srow{display:grid;grid-template-columns:96px minmax(0,1fr) 150px;align-items:center;gap:12px;padding:7px 0;border-top:1px solid var(--line)}
+.srow:first-of-type{border-top:0}
+.srow .lab{font:600 12.5px var(--f-mono)}
+.sbar{display:flex;height:16px;border-radius:4px;overflow:hidden;background:var(--surface-2);gap:2px}
+.sbar span{display:block;height:100%;min-width:0}
+.srow .vals{font:12px var(--f-mono);color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.srow .vals b{color:var(--ink);font-weight:500}
+@media (max-width:620px){.srow{grid-template-columns:76px minmax(0,1fr)}.srow .vals{grid-column:2;text-align:left}}
+/* hbars */
+.hb{display:grid;grid-template-columns:minmax(90px,220px) minmax(0,1fr) 112px;gap:10px;align-items:center;padding:4px 0}
+.hb .k{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb .t{height:12px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.hb .t span{display:block;height:100%;background:var(--seq-3);border-radius:0 3px 3px 0}
+.hb .t span.w{background:var(--warn)} .hb .t span.b{background:var(--bad)}
+.hb .n{font:12px var(--f-mono);text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.hb .n b{color:var(--ink);font-weight:500}
+@media (max-width:520px){.hb{grid-template-columns:minmax(80px,120px) minmax(0,1fr) 92px}}
+.scroll{max-height:420px;overflow:auto;padding-right:4px}
+/* tables */
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{font:500 11px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;background:var(--surface)}
+td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+td.m{font-family:var(--f-mono);font-size:12px}
+tr.grp td{background:var(--surface-2);font-weight:600}
+.pill{display:inline-block;font:500 11px var(--f-mono);padding:2px 7px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.n{background:var(--surface-2);color:var(--muted)}
+.minibar{display:inline-block;width:70px;height:6px;border-radius:3px;background:var(--surface-2);vertical-align:middle;margin-right:6px;overflow:hidden}
+.minibar span{display:block;height:100%;background:var(--seq-3)}
+/* tag selector */
+.tagsel{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+.tagsel button{font:500 12.5px var(--f-mono);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;border-radius:var(--r);cursor:pointer}
+.tagsel button[aria-pressed="true"]{background:#10233f;color:#fff;border-color:#10233f;box-shadow:inset 3px 0 0 var(--accent)}
+.tagsel button[disabled]{opacity:.5;cursor:not-allowed}
+/* notes */
+.note{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 12px;border-radius:0 var(--r) var(--r) 0;font-size:13px}
+.note.info{border-left-color:var(--accent);background:var(--accent-soft)}
+.note.bad{border-left-color:var(--bad);background:var(--bad-soft)}
+.note b{font-weight:600}
+ul.clean{margin:0;padding-left:18px} ul.clean li{margin:3px 0}
+/* QA list */
+.qa{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 28px}
+@media (max-width:820px){.qa{grid-template-columns:minmax(0,1fr)}}
+.qa div{padding:10px 0;border-top:1px solid var(--line)}
+.qa dt{font:500 11.5px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.qa dd{margin:3px 0 0;font-size:13.5px}
+/* flow */
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;align-items:stretch}
+.flow .st{background:var(--surface-2);border-radius:var(--r);padding:12px;position:relative}
+.flow .st .eyebrow{font-size:10.5px}
+.flow .st .v{font:600 26px/1.1 var(--f-disp);margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.flow .st p{margin:0;font-size:12px;color:var(--muted)}
+.flow .st:not(:last-child)::after{content:"";position:absolute;right:-9px;top:50%;width:8px;height:8px;border-top:2px solid var(--faint);border-right:2px solid var(--faint);transform:translateY(-50%) rotate(45deg)}
+@media (max-width:900px){.flow{grid-template-columns:repeat(2,minmax(0,1fr))}.flow .st::after{display:none}}
+/* drill */
+.drill{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,1.6fr);gap:16px}
+@media (max-width:1050px){.drill{grid-template-columns:minmax(0,1fr)}}
+.list{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:var(--r)}
+.li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer;background:var(--surface);width:100%;text-align:left;border-left:0;border-right:0;border-top:0;color:var(--ink);font:inherit}
+.li:hover{background:var(--surface-2)} .li[aria-current="true"]{background:var(--accent-soft)}
+.li .nm{font-weight:500;font-size:13px;overflow-wrap:anywhere}
+.li .ct{font:12px var(--f-mono);color:var(--muted)}
+.li .bars{grid-column:1/-1;display:flex;gap:10px;font:11px var(--f-mono);color:var(--muted)}
+input[type=search],select{font:13px var(--f-body);padding:7px 10px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);color:var(--ink);min-width:0}
+.ctrls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+label.ck{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;color:var(--muted)}
+/* code */
+pre.code{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;font:12px/1.55 var(--f-mono);overflow-x:auto;margin:0;white-space:pre}
+.codewrap{position:relative}
+.codewrap button{position:absolute;top:8px;right:8px;font:500 11px var(--f-mono);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:4px 9px;border-radius:4px;cursor:pointer}
+.schema{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:900px){.schema{grid-template-columns:minmax(0,1fr)}}
+.ent{border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;background:var(--surface)}
+.ent.fact{border-color:var(--accent);background:var(--accent-soft)}
+.ent h4{margin:0 0 4px;font:600 13px var(--f-mono)}
+.ent p{margin:0;font-size:12px;color:var(--muted)}
+.ent code{font:11.5px var(--f-mono)}
+#tip{position:fixed;pointer-events:none;z-index:50;background:var(--ink);color:var(--surface);font:12px/1.4 var(--f-body);padding:6px 9px;border-radius:4px;max-width:280px;opacity:0;transition:opacity .08s}
+.policy{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.gauge{height:10px;background:var(--surface-2);border-radius:5px;overflow:hidden;margin:8px 0 6px}
+.gauge span{display:block;height:100%;background:var(--ok)}
+.muted{color:var(--muted)}
+.foot{color:var(--faint);font-size:12px;margin-top:28px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.top .chip.warn{background:#fff3d9;color:#10233f;border-color:transparent}
+.top .chip{box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.top .seg button:hover,.top nav.tabs button:hover{color:#fff}
+.evidence-strip{box-shadow:0 5px 18px rgba(16,35,63,.045);border-radius:9px}
+.evidence-strip button{transition:border-color .18s,background .18s}.evidence-strip button:hover{border-color:var(--accent);background:var(--accent-soft)}
+.action-btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:7px 10px;font:600 12px var(--f-body);cursor:pointer}.action-btn:hover{border-color:var(--accent);background:var(--accent-soft)}
+.action-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.action-btn.danger{color:var(--bad);border-color:#efb8b6}.action-btn.danger:hover{background:var(--bad-soft)}
+.link-btn{border:0;background:none;color:var(--accent);font:600 12px var(--f-body);cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:2px}
+.delta.up{color:var(--ok)}.delta.down{color:var(--bad)}.delta.neutral{color:var(--muted)}
+.trend-wrap{min-height:180px}.trend-wrap svg{width:100%;height:190px;overflow:visible}.trend-grid{stroke:var(--line);stroke-width:1}.trend-line{fill:none;stroke:var(--accent);stroke-width:3}.trend-dot{fill:var(--surface);stroke:var(--accent);stroke-width:3}.trend-label{fill:var(--muted);font:11px var(--f-mono)}
+.compact-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.compact-form label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--muted)}.compact-form input{padding:8px;border:1px solid var(--line);border-radius:6px;font:inherit;color:var(--ink);background:var(--surface)}.compact-form .wide{grid-column:span 2}@media(max-width:850px){.compact-form{grid-template-columns:1fr 1fr}.compact-form .wide{grid-column:span 2}}@media(max-width:520px){.compact-form{grid-template-columns:1fr}.compact-form .wide{grid-column:span 1}}
+</style>
+
+<header class="top"><div class="wrap">
+  <div class="hrow">
+    <div class="brand"><a class="brand-logo" href="/" aria-label="Ir para a página inicial"><img src="/tags/assets/evertec-logo-white.png" alt="Evertec"></a><h1 id="moduleBrandTitle">FinOps · Governança de Tags</h1></div>
+    <div class="meta">
+      <div data-mod-seletor="tags"></div>
+      <div class="seg" role="group" aria-label="Universo analisado" id="scopeSeg">
+        <button data-s="esc" aria-pressed="true">Governança · CSV do escopo</button>
+        <button data-s="all" aria-pressed="false">Ambiente extraído · CSV completo</button>
+        <button data-s="out" aria-pressed="false">Fora de Governança</button>
+      </div>
+      <span id="collectionLabel" class="chip warn" title="Data de referência da fotografia atualmente exibida.">ATUALIZADO EM 09/10/2026</span>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-p="exec" aria-selected="true">Visão Executiva</button>
+    <button role="tab" data-p="tags" aria-selected="false">Distribuição das Tags</button>
+    <button role="tab" data-p="fin" aria-selected="false">FinOps · BU × CC</button>
+    <button role="tab" data-p="evo" aria-selected="false">Evolução da Governança</button>
+    <button role="tab" data-p="det" aria-selected="false">Detalhamento</button>
+    <button role="tab" data-p="pbi" aria-selected="false">Modelo Power BI</button>
+  </nav>
+</div></header>
+
+<main><div class="wrap">
+<div class="evidence-strip"><span><b>Base de recursos</b> · RGs/subscriptions observados pelo inventário</span><span>Escopo declarado pelos CSVs · mapa BU×CC pendente</span><div></div></div>
+
+
+<!-- ============ VISÃO EXECUTIVA ============ -->
+<section class="page" id="p-exec">
+  <div class="grid" id="kpis"></div>
+  <div class="grid">
+    <div class="panel c8">
+      <h2>Preenchimento × Classificação por Tag</h2>
+      <p class="sub">Base: recursos do universo selecionado. INDEFINIDO conta como preenchido tecnicamente, mas aparece separado porque ainda não é uma classificação.</p>
+      <div class="legend"><span><i style="background:var(--ok)"></i>Informado</span><span><i style="background:var(--warn)"></i>Preenchido = INDEFINIDO</span><span><i style="background:var(--bad)"></i>Vazio / inexistente</span></div>
+      <div id="stackTags"></div>
+    </div>
+    <div class="panel c4">
+      <h2>Azure Policy</h2>
+      <p class="sub">Valores informados a partir do portal. Não há export de compliance anexado.</p>
+      <div class="policy" id="policy"></div>
+      <p class="note info" style="margin:14px 0 0">O compliance geral inclui políticas que não são de tags. Para a governança de tags vale o compliance das iniciativas de tags.</p>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="panel c7">
+      <h2>Respostas executivas</h2>
+      <p class="sub">Calculadas para o universo selecionado no topo.</p>
+      <dl class="qa" id="qa"></dl>
+    </div>
+    <div class="panel c5">
+      <h2>Pendências por granularidade</h2>
+      <p class="sub">Cada linha é uma população diferente. Os números não se somam entre linhas.</p>
+      <div class="tbl"><table id="granTbl"></table></div>
+      <p class="sub" style="margin:10px 0 0">RG e Subscription com pendência = possui ao menos um recurso com CLIENTE ou PRODUTO vazio/INDEFINIDO. As tags do próprio RG e da Subscription não vêm na extração.</p>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Pendências de dados para fechar o painel</h2>
+    <p class="sub">Itens que o dashboard não consegue calcular com as bases recebidas.</p>
+    <ul class="clean" id="gaps"></ul>
+  </div>
+</section>
+
+<!-- ============ TAGS ============ -->
+<section class="page" id="p-tags" hidden>
+  <div class="tagsel" id="tagSel"></div>
+  <div class="grid" id="tagKpis"></div>
+  <div class="grid">
+    <div class="panel c7">
+      <h2 id="tagDistTitle">Distribuição dos valores</h2>
+      <p class="sub" id="tagDistSub"></p>
+      <div class="ctrls" id="ownerCtrl" hidden>
+        <div class="seg" role="group" aria-label="CCOWNER"><button data-o="c" aria-pressed="true">Caixa normalizada</button><button data-o="r" aria-pressed="false">Valor bruto</button></div>
+      </div>
+      <div class="scroll" id="tagDist"></div>
+    </div>
+    <div class="panel c5">
+      <h2>Qualidade do valor</h2>
+      <p class="sub">Variações de caixa normalizadas para contagem (ex.: prd → PRD). O valor original segue no detalhamento.</p>
+      <div id="tagVariants"></div>
+    </div>
+  </div>
+  <div class="panel" id="deParaPanel">
+    <h2>Propostas de De/Para CCOWNER</h2>
+    <p class="sub">Tabela auditável. Propostas de equivalência para aprovação. O painel usa apenas normalização de caixa; e-mails não são unidos a nomes automaticamente.</p>
+    <div class="tbl scroll"><table id="deParaTbl"></table></div>
+  </div>
+</section>
+
+<!-- ============ FINOPS ============ -->
+<section class="page" id="p-fin" hidden>
+  <div class="grid" id="finKpis"></div>
+  <div class="grid">
+    <div class="panel c5">
+      <h2>Recursos por BU</h2>
+      <p class="sub">Valores normalizados para maiúsculas.</p>
+      <div id="buBars"></div>
+    </div>
+    <div class="panel c7">
+      <h2>CAPEX e FOLIO</h2>
+      <p class="sub">Cobertura FOLIO = FOLIO preenchido ÷ recursos CAPEX=SIM.</p>
+      <div id="capexBox"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Matriz BU → Centro de Custo</h2>
+    <p class="sub">Recursos, RGs distintos e participação por combinação. RGs com recursos são contados por combinação, então um RG com recursos em duas combinações aparece nas duas.</p>
+    <div class="ctrls"><label class="ck"><input type="checkbox" id="ccOnlyMulti"> Mostrar só CCs associados a mais de uma BU</label></div>
+    <div class="tbl scroll" style="max-height:560px"><table id="buccTbl"></table></div>
+  </div>
+</section>
+
+<!-- ============ EVOLUÇÃO ============ -->
+<section class="page" id="p-evo" hidden>
+  <div class="grid" id="comparisonCards"></div>
+  <div class="panel">
+    <div class="hrow"><div><h2>Evolução temporal por Tag</h2><p class="sub">Percentual tecnicamente preenchido no escopo Governança, por fotografia.</p></div><select id="trendTag" aria-label="Tag da evolução"><option>AMBIENTE</option><option>BU</option><option>CAPEX</option><option>CC</option><option>CCOWNER</option><option>CLIENTE</option><option>PRODUTO</option><option>FOLIO</option></select></div>
+    <div id="tagTrend" class="trend-wrap"></div>
+  </div>
+  <div class="sect-h"><h3>Saneamento PRODUTO</h3><span>Extração histórica RGs_Sem_Tag_PRODUTO · ação: PRODUTO=INDEFINIDO</span></div>
+  <div class="flow" id="prodFlow"></div>
+  <div class="grid">
+    <div class="panel c6">
+      <h2>Onde estavam os 830 RGs</h2>
+      <p class="sub">Cruzamento da subscription com a fotografia atual.</p>
+      <div class="tbl"><table id="prodWhere"></table></div>
+    </div>
+    <div class="panel c6">
+      <h2>As 11 falhas confrontadas com a fotografia atual</h2>
+      <p class="sub">Sem tags de RG na extração, o confronto usa os recursos de dentro do RG.</p>
+      <div class="tbl"><table id="prodFail"></table></div>
+    </div>
+  </div>
+  <div class="note info" id="prodNote"></div>
+
+  <div class="sect-h" style="margin-top:14px"><h3>Reclassificação BU PAGAMENTOS → BANCOS</h3><span>Planilha Atualização BU PAGAMENTOS para BANCOS · 3 ondas</span></div>
+  <div class="flow" id="buFlow"></div>
+  <div class="grid">
+    <div class="panel c5">
+      <h2>Ondas registradas</h2>
+      <p class="sub">Onda 3 é tratada como reprocessamento. Os únicos saem da deduplicação por ResourceId.</p>
+      <div class="tbl"><table id="waveTbl"></table></div>
+    </div>
+    <div class="panel c7">
+      <h2>Antes → Depois (recursos que ainda existem)</h2>
+      <p class="sub">BU · CC registrado na planilha → BU · CC na fotografia atual. Base: recursos únicos das Ondas 2 e 3.</p>
+      <div class="tbl"><table id="flowTbl"></table></div>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="panel c6">
+      <h2>Onda 1 · Resource Groups</h2>
+      <p class="sub">Situação atual dos 147 RGs, pelos recursos dentro de cada um.</p>
+      <div class="tbl"><table id="w1Tbl"></table></div>
+    </div>
+    <div class="panel c6">
+      <h2>Antes × Depois consolidado</h2>
+      <p class="sub">Indicadores comparáveis entre a fotografia histórica e a atual.</p>
+      <div class="tbl"><table id="abTbl"></table></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Evolução entre fotografias</h2>
+    <p class="sub">Comparação do escopo Governança por Data de Coleta. CLIENTE e PRODUTO classificados excluem vazio e INDEFINIDO.</p>
+    <div class="tbl"><table id="snapshotEvolution"><thead><tr><th>Coleta</th><th>Recursos</th><th>Δ recursos</th><th>RGs</th><th>CLIENTE classificado</th><th>PRODUTO classificado</th></tr></thead><tbody></tbody></table></div>
+  </div>
+  <div class="panel">
+    <h2>Registro auditável das ações de saneamento</h2>
+    <p class="sub">Históricos conhecidos e novas ações registradas com data, volume, resultado, responsável e evidência.</p>
+    <div class="compact-form" id="actionForm">
+      <label>Data<input type="date" id="actionDate"></label><label class="wide">Ação<input id="actionName" placeholder="Ex.: Correção de BU e CC"></label><label>Escopo<input id="actionScope" placeholder="RGs / recursos"></label>
+      <label>Processados<input type="number" min="0" id="actionProcessed"></label><label>Sucessos<input type="number" min="0" id="actionSuccess"></label><label>Falhas<input type="number" min="0" id="actionFailure"></label><label>Responsável<input id="actionOwner"></label>
+      <label class="wide">Evidência / chamado<input id="actionEvidence" placeholder="Ticket, arquivo ou observação"></label><div style="align-self:end"><button id="saveAction" class="action-btn primary">Registrar ação</button></div>
+    </div>
+    <div class="tbl" style="margin-top:16px"><table id="actionsTable"></table></div>
+  </div>
+</section>
+
+<!-- ============ DETALHAMENTO ============ -->
+<section class="page" id="p-det" hidden>
+  <div class="panel">
+    <h2>Subscription → Resource Group → Resource</h2>
+    <p class="sub">Selecione uma subscription e um RG. Percentuais = CLIENTE e PRODUTO informados (sem INDEFINIDO e sem vazio).</p>
+    <div class="ctrls">
+      <input type="search" id="detQ" placeholder="Buscar recurso, RG ou subscription" aria-label="Buscar" style="flex:1 1 240px">
+      <label class="ck"><input type="checkbox" id="detPend"> Só pendências de CLIENTE/PRODUTO</label>
+      <button id="exportPending" class="action-btn">Exportar resultado CSV</button>
+    </div>
+    <div class="drill">
+      <div><div class="eyebrow" style="margin-bottom:6px">Subscriptions</div><div class="list" id="dSubs"></div></div>
+      <div><div class="eyebrow" style="margin-bottom:6px">Resource Groups</div><div class="list" id="dRgs"></div></div>
+      <div><div class="eyebrow" style="margin-bottom:6px" id="dResH">Recursos</div><div class="list tbl" id="dRes"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ POWER BI ============ -->
+<section class="page" id="p-pbi" hidden>
+  <details class="panel import-box"><summary>Atualizar dados com novas extrações</summary>
+    <p class="sub">Selecione os dois CSVs da mesma coleta. O primeiro inclui Sandbox e Descomissionada; o segundo deve excluir esses dois MGs na consulta. O dashboard calcula a diferença por ResourceId e grava uma nova fotografia no histórico do Web App.</p>
+    <div class="import-fields">
+      <label>1. CSV completo do ambiente extraído<input id="csvFull" type="file" accept=".csv,text/csv"></label>
+      <label>2. CSV de Governança · mg-evertecbrasil<input id="csvScope" type="file" accept=".csv,text/csv"></label>
+      <label>3. Data de coleta<input id="collectionDate" type="date"></label>
+    </div>
+    <button id="applyImport" class="import-action">Gravar nova fotografia</button>
+    <p id="importMessage" role="status" aria-live="polite"></p>
+    <p class="sub">A última fotografia passa a ser exibida para todos os usuários autorizados. As anteriores permanecem preservadas para comparação. Os históricos de PRODUTO e PAGAMENTOS → BANCOS são confrontados novamente; Azure Policy não é atualizada por estes CSVs.</p>
+  </details>
+  <div class="save-row"><span id="importState"></span><button id="saveDashboard" class="import-action">Baixar cópia HTML</button></div>
+  <details class="panel pbi-collapse" open>
+    <summary>Histórico de fotografias</summary>
+    <div class="pbi-collapse-body">
+    <p class="sub">Coletas gravadas no Web App. A primeira linha é a versão atual; o deploy inicial permanece como baseline.</p>
+    <div class="tbl"><table id="snapshotHistory"><thead><tr><th>Coleta</th><th>Gravada em</th><th>Recursos</th><th>RGs</th><th>Subscriptions</th><th>CLIENTE classificado</th><th>PRODUTO classificado</th><th>Responsável</th><th>Ação</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </details>
+  <details class="panel pbi-collapse" open>
+    <summary>Mapa oficial BU × CC × CCOWNER</summary>
+    <div class="pbi-collapse-body">
+    <p class="sub">Carregue um CSV com as colunas CC, BU e CCOWNER. O mapa é persistido no Web App e usado para validar as combinações financeiras sem fazer associações duvidosas.</p>
+    <div class="ctrls"><input id="officialMapFile" type="file" accept=".csv,text/csv"><button id="uploadOfficialMap" class="action-btn primary">Carregar mapa oficial</button><span id="officialMapState" class="muted"></span></div>
+    <div class="tbl"><table id="officialMapTable"></table></div>
+    </div>
+  </details>
+  <div class="panel">
+    <h2>Modelo de dados (estrela)</h2>
+    <p class="sub">Uma fato por fotografia com DataColeta, tags em formato longo para as páginas de distribuição, e fatos separadas para o histórico de saneamento.</p>
+    <div class="schema">
+      <div class="ent fact"><h4>fRecursoSnapshot</h4><p>1 linha por recurso por coleta. <code>SnapshotKey, ResourceIdKey (lower), SubscriptionId, RGKey, ResourceType, AMBIENTE, BU, CAPEX, CC, CCOWNER_Bruto, CLIENTE, PRODUTO, FOLIO, NoEscopo</code></p></div>
+      <div class="ent fact"><h4>fTagValor</h4><p>Unpivot das 8 tags. <code>SnapshotKey, ResourceIdKey, Tag, ValorBruto, ValorNorm, Status (Informado | Indefinido | Vazio)</code></p></div>
+      <div class="ent fact"><h4>fSaneamento</h4><p>Histórico das ações. <code>Acao (PRODUTO | BU_PAG_BANCOS), Onda, Granularidade, ChaveObjeto, ValorAntes, ValorDepois, Status, TambemNaOnda2</code></p></div>
+      <div class="ent"><h4>dSnapshot</h4><p><code>SnapshotKey, DataColeta, Universo (Escopo | Completo)</code></p></div>
+      <div class="ent"><h4>dSubscription</h4><p><code>SubscriptionId, Nome, ManagementGroup, NoEscopo</code></p></div>
+      <div class="ent"><h4>dResourceGroup</h4><p><code>RGKey = SubscriptionId|lower(RG), Nome, SubscriptionId</code></p></div>
+      <div class="ent"><h4>dCCOwnerDePara</h4><p><code>De, Para, Regra, Confianca, ValidadoPor, ValidadoEm</code></p></div>
+      <div class="ent"><h4>dBUCC_Oficial</h4><p><code>CC, BU_Oficial, VigenciaInicio</code> · pendente de envio</p></div>
+      <div class="ent"><h4>fPolicyCompliance</h4><p><code>DataColeta, Iniciativa, EhTag, Compliant, Total</code></p></div>
+    </div>
+    <p class="sub" style="margin:12px 0 0">Relacionamentos 1:N: dSnapshot, dSubscription e dResourceGroup → fRecursoSnapshot; fRecursoSnapshot → fTagValor por (SnapshotKey, ResourceIdKey); dCCOwnerDePara[De] → fRecursoSnapshot[CCOWNER_Bruto]; dBUCC_Oficial[CC] → fRecursoSnapshot[CC].</p>
+  </div>
+  <div class="grid">
+    <div class="panel c6"><h2>Medidas DAX · base e preenchimento</h2><p class="sub">Use com um filtro de página em dSnapshot = última coleta.</p><div class="codewrap"><button data-copy="dax1">Copiar</button><pre class="code" id="dax1"></pre></div></div>
+    <div class="panel c6"><h2>Medidas DAX · FinOps e saneamento</h2><p class="sub">FOLIO só sobre CAPEX=SIM; ondas sempre por ResourceId distinto.</p><div class="codewrap"><button data-copy="dax2">Copiar</button><pre class="code" id="dax2"></pre></div></div>
+  </div>
+  <div class="grid">
+    <div class="panel c6"><h2>Ajuste da query do Resource Graph</h2><p class="sub">Acrescente ao final da query atual para trazer FOLIO e a data de coleta.</p><div class="codewrap"><button data-copy="kql">Copiar</button><pre class="code" id="kql"></pre></div></div>
+    <div class="panel c6"><h2>Páginas e visuais sugeridos</h2><div class="tbl"><table id="pbiPages"></table></div></div>
+  </div>
+</section>
+
+</div></main>
+<footer class="corporate-footer" aria-label="Assinatura institucional">
+  <div class="footer-inner">
+    <p>Desenvolvido por <a href="https://solonetwork.com.br/" target="_blank" rel="noopener noreferrer">Solo Network</a> para <a href="https://evertecinc.com/pt-br/" target="_blank" rel="noopener noreferrer">Evertec</a> · 2026 · Uso interno</p>
+  </div>
+</footer>
+<div id="tip" role="tooltip"></div>
+
+<script id="data" type="application/json">__TAGS_SNAPSHOT__</script>
+<script>
+let D=JSON.parse(document.getElementById('data').textContent);
+let R=D.R, N=R.s.length, DI=D.dict;
+const TAGS=['AMBIENTE','BU','CAPEX','CC','CCOWNER','CLIENTE','PRODUTO','FOLIO'];
+// O layout continua exibindo TAGS (FinOps). As colunas abaixo já entram no modelo
+// compactado para as próximas análises de VM e assinatura, sem alterar as telas atuais.
+const VM_TAGS=['BACKUP','DISPONIBILIDADE','DOMINIO','FUNCAO','SQUAD','SO','START','STOP','RESERVA','WAVE','ENDOFLIFE'];
+const SUBSCRIPTION_TAGS=['RBU','RFIN'];
+const INVENTORY_FIELDS=['LOCATION','KIND','PROVISIONINGSTATE','MONITORINGSTATUS','SUBSCRIPTIONSTATE','ESCOPO_HIERARQUIA','ELEGIVEL_GOVERNANCA','CLASSE_INVENTARIO','MOTIVO_NAO_ELEGIVEL','REGRA_EXCLUSAO','APLICABILIDADE_TAGS_VM','CONFORMIDADE_ENDOFLIFE','STATUS_HERANCA','VERSAO_CONTRATO','FONTE_INVENTARIO'];
+const fmt=n=>n.toLocaleString('pt-BR');
+const pct=(a,b,d=1)=>b?(100*a/b).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d})+'%':'—';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $=id=>document.getElementById(id);
+let scope='esc';
+const scopeName={esc:'Governança · CSV do escopo',all:'Ambiente extraído · CSV completo',out:'Fora de Governança · diferença dos CSVs'};
+function idxs(){const o=[];for(let i=0;i<N;i++){const s=R.sc[i];if(scope==='all'||(scope==='esc'&&s)||(scope==='out'&&!s))o.push(i)}return o}
+function val(tag,i){if(tag==='FOLIO'&&!D.meta?.folioCollected)return null;const k=R[tag][i];return k<0?null:DI[tag][k]}
+function tstat(tag,ix){let cl=0,ind=0,vz=0;for(const i of ix){const v=val(tag,i);if(v==null)vz++;else if(v==='INDEFINIDO')ind++;else cl++}return{cl,ind,vz,n:ix.length,fill:cl+ind}}
+function counts(tag,ix,raw){const m=new Map();const col=raw?R.CCOWNER_RAW:R[tag],dict=raw?DI.CCOWNER_RAW:DI[tag];for(const i of ix){const k=col[i];const v=k<0?'(vazio)':dict[k];m.set(v,(m.get(v)||0)+1)}return [...m].sort((a,b)=>b[1]-a[1])}
+const isPend=i=>{const c=val('CLIENTE',i),p=val('PRODUTO',i);return c==null||p==null||c==='INDEFINIDO'||p==='INDEFINIDO'};
+
+/* tooltip */
+const tip=$('tip');
+document.addEventListener('mousemove',e=>{const t=e.target.closest('[data-tip]');if(!t){tip.style.opacity=0;return}tip.innerHTML=t.dataset.tip;tip.style.opacity=1;const x=Math.min(e.clientX+14,innerWidth-tip.offsetWidth-8);tip.style.left=x+'px';tip.style.top=(e.clientY+16)+'px'});
+
+/* ================= EXEC ================= */
+function renderExec(){
+  const ix=idxs();
+  const subs=new Set(),rgs=new Set(),pSubs=new Set(),pRgs=new Set();let pRes=0;
+  for(const i of ix){subs.add(R.s[i]);rgs.add(R.g[i]);if(isPend(i)){pRes++;pSubs.add(R.s[i]);pRgs.add(R.g[i])}}
+  const sc=D.subs.filter(s=>s.inScope).length, tot=D.subs.length;
+  const cl=tstat('CLIENTE',ix), pr=tstat('PRODUTO',ix);
+  const allTags=['AMBIENTE','BU','CAPEX','CC','CCOWNER','CLIENTE','PRODUTO'];
+  let fullFill=0;for(const i of ix){if(allTags.every(t=>val(t,i)!=null))fullFill++}
+  $('kpis').innerHTML=[
+    ['Subscriptions',fmt(subs.size),scope==='esc'?`de ${tot} no ambiente completo · ${tot-sc} fora do escopo`:scope==='all'?`${sc} no escopo · ${tot-sc} fora`:'subscriptions observadas somente em A'],
+    ['RGs com recursos',fmt(rgs.size),'com ao menos um recurso na extração'],
+    ['Recursos',fmt(ix.length),'ResourceId distinto (case-insensitive)'],
+    ['7 tags preenchidas',pct(fullFill,ix.length),`${fmt(fullFill)} recursos com AMBIENTE, BU, CAPEX, CC, CCOWNER, CLIENTE e PRODUTO`]
+  ].map(k=>`<div class="panel kpi c3"><div class="eyebrow">${k[0]}</div><div class="v">${k[1]}</div><div class="d">${k[2]}</div></div>`).join('');
+  $('stackTags').innerHTML=TAGS.map(t=>{
+    if(t==='FOLIO'&&!D.meta?.folioCollected)return `<div class="srow"><div class="lab">FOLIO</div><div class="sbar" style="background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,var(--line) 6px 8px)"></div><div class="vals">não extraída</div></div>`;
+    const s=tstat(t,ix);const w=x=>(100*x/s.n)+'%';
+    return `<div class="srow"><div class="lab">${t}</div><div class="sbar">
+      ${s.cl?`<span style="width:${w(s.cl)};background:var(--ok)" data-tip="<b>${t}</b> informado: ${fmt(s.cl)} (${pct(s.cl,s.n)})"></span>`:''}
+      ${s.ind?`<span style="width:${w(s.ind)};background:var(--warn)" data-tip="<b>${t}</b> = INDEFINIDO: ${fmt(s.ind)} (${pct(s.ind,s.n)})"></span>`:''}
+      ${s.vz?`<span style="width:${Math.max(.6,100*s.vz/s.n)}%;background:var(--bad)" data-tip="<b>${t}</b> vazio: ${fmt(s.vz)} (${pct(s.vz,s.n,2)})"></span>`:''}
+      </div><div class="vals">preench. <b>${pct(s.fill,s.n)}</b> · informado <b>${pct(s.cl,s.n)}</b></div></div>`}).join('');
+  $('policy').innerHTML=`<div><div class="eyebrow">Geral do ambiente</div><div class="kpi"><div class="v">≈98%</div></div><div class="gauge"><span style="width:98%"></span></div><div class="d muted" style="font-size:12px">Todas as políticas</div></div>
+   <div><div class="eyebrow">Iniciativas de tags</div><div class="kpi"><div class="v">100%</div></div><div class="gauge"><span style="width:100%"></span></div><div class="d muted" style="font-size:12px">Escopo de governança</div></div>`;
+  const capS=ix.filter(i=>val('CAPEX',i)==='SIM').length;
+  const out=D.subs.filter(s=>!s.inScope).map(s=>s.name);
+  const qa=[
+    ['Qual é o nosso escopo?',`${scopeName[scope]}: ${fmt(subs.size)} subscriptions, ${fmt(rgs.size)} RGs e ${fmt(ix.length)} recursos. Fora de Governança: ${out.join(', ')}.`],
+    ['Quanto está preenchido?',`AMBIENTE, BU, CAPEX, CC e CLIENTE estão em ${pct(tstat('BU',ix).fill,ix.length)} dos recursos. PRODUTO em ${pct(pr.fill,pr.n)}. ${fmt(fullFill)} recursos têm as 7 tags.`],
+    ['Quanto está efetivamente informado?',`CLIENTE ${pct(cl.cl,cl.n)} e PRODUTO ${pct(pr.cl,pr.n)}. O restante está como INDEFINIDO (${fmt(cl.ind)} e ${fmt(pr.ind)} recursos).`],
+    ['Onde estão as pendências?',`${fmt(pRes)} recursos em ${fmt(pRgs.size)} RGs e ${fmt(pSubs.size)} subscriptions têm CLIENTE ou PRODUTO sem classificação. Ver o ranking no Detalhamento.`],
+    ['Quantos itens foram saneados?',`PRODUTO: 819 de 830 RGs (98,67%) receberam INDEFINIDO. BU: 147 RGs na Onda 1 e ${fmt(D.wu.uniq)} recursos únicos nas Ondas 2 e 3.`],
+    ['Quais mudanças financeiras foram feitas?',`O histórico registra a reclassificação para BANCOS. Parte dos registros já tinha BU=BANCOS ou PIX/PSTI; os resultados atuais são confrontados por ResourceId. Não foi observado BU=PAGAMENTOS nas extrações fornecidas.`],
+    ['Qual foi a evolução Antes × Depois?',`A execução histórica atribuiu PRODUTO em 819 RGs. A foto B tem ${fmt(tstat('PRODUTO',idxsScope()).vz)} recursos sem PRODUTO. São populações diferentes; não formam uma taxa de redução. Dos recursos reinformados que ainda existem, ${pct(D.wu.buAgora.BANCOS||0,D.wu.existe)} estão em BANCOS.`],
+    ['Como estão as políticas?',`Iniciativas de tags com 100% de compliance no escopo. O geral, ≈98%, mistura outras políticas.`]
+  ];
+  $('qa').innerHTML=qa.map(q=>`<div><dt>${q[0]}</dt><dd>${q[1]}</dd></div>`).join('');
+  $('granTbl').innerHTML=`<thead><tr><th>Nível</th><th class="r">Total</th><th class="r">Com pendência</th><th class="r">%</th></tr></thead><tbody>
+   <tr><td>Subscriptions</td><td class="r">${fmt(subs.size)}</td><td class="r">${fmt(pSubs.size)}</td><td class="r">${pct(pSubs.size,subs.size)}</td></tr>
+   <tr><td>Resource Groups</td><td class="r">${fmt(rgs.size)}</td><td class="r">${fmt(pRgs.size)}</td><td class="r">${pct(pRgs.size,rgs.size)}</td></tr>
+   <tr><td>Recursos</td><td class="r">${fmt(ix.length)}</td><td class="r">${fmt(pRes)}</td><td class="r">${pct(pRes,ix.length)}</td></tr></tbody>`;
+  $('gaps').innerHTML=[
+    `<b>FOLIO</b> não vem nas extrações. Sem ele não dá para calcular a cobertura sobre os ${fmt(capS)} recursos CAPEX=SIM. Ajuste de query na aba Modelo Power BI.`,
+    `<b>Mapeamento oficial BU × CC</b> não foi enviado. Hoje cada CC aparece com uma única BU (consistência interna), mas a conformidade contra o oficial depende da tabela.`,
+    `<b>Data de coleta</b> não vem no CSV. Data de recebimento: 07/10/2026. Data de coleta não informada.`,
+    `<b>Tags de RG e Subscription</b> não estão nas extrações (só recursos). Os indicadores de RG e Subscription são derivados dos recursos, e RGs vazios não aparecem.`,
+    `<b>Onda 1</b>: o arquivo tem 147 RGs e a referência operacional fala em 149. A diferença de 2 continua em aberto.`,
+    `<b>Ambiente extraído · CSV completo</b> (query_2) cobre ${D.subs.length} subscriptions. A planilha de PRODUTO cita subscriptions que não estão nele (MPN - Igor Politano, sub-digital-simply-prd, Visual Studio e outras), logo, sua abrangência como inventário completo do tenant não está comprovada.`,
+    `<b>Duplicidades</b>: ${D.dupFull} ResourceIds aparecem duas vezes no ambiente completo com o RG em caixa diferente. Foram deduplicados. 2 recursos têm PRODUTO preenchido com STATUS_PRODUTO vazio na query (SCAFPLUSNET) e foram tratados como preenchidos.`,
+    `<b>Azure Policy</b>: os percentuais são os informados. Para histórico, exportar o compliance por iniciativa a cada coleta.`
+  ].map(x=>`<li>${x}</li>`).join('');
+}
+function idxsScope(){const o=[];for(let i=0;i<N;i++)if(R.sc[i])o.push(i);return o}
+
+/* ================= TAGS ================= */
+let curTag='AMBIENTE', ownerMode='c';
+function renderTags(){
+  $('tagSel').innerHTML=TAGS.map(t=>`<button data-t="${t}" aria-pressed="${t===curTag}" ${t==='FOLIO'&&!D.meta?.folioCollected?'disabled title="FOLIO não vem na extração"':''}>${t}</button>`).join('');
+  const ix=idxs(), s=tstat(curTag,ix);
+  $('tagKpis').innerHTML=[
+    ['Preenchida',fmt(s.fill),pct(s.fill,s.n)],['Informada',fmt(s.cl),pct(s.cl,s.n)],
+    ['INDEFINIDO',fmt(s.ind),pct(s.ind,s.n)],['Vazia / inexistente',fmt(s.vz),pct(s.vz,s.n,2)]
+  ].map(k=>`<div class="panel kpi c3"><div class="eyebrow">${curTag} · ${k[0]}</div><div class="v">${k[1]}<small>${k[2]}</small></div><div class="d">de ${fmt(s.n)} recursos</div></div>`).join('');
+  const raw=curTag==='CCOWNER'&&ownerMode==='r';
+  $('ownerCtrl').hidden=curTag!=='CCOWNER';
+  const c=counts(curTag,ix,raw), max=c.length?c[0][1]:1;
+  $('tagDistTitle').textContent=`Distribuição de ${curTag}`;
+  $('tagDistSub').textContent=`${c.length} valores distintos${raw?' (bruto)':curTag==='CCOWNER'?' com caixa normalizada':''}. Percentual sobre ${fmt(ix.length)} recursos.`;
+  $('tagDist').innerHTML=c.map(([k,v])=>{const cls=k==='INDEFINIDO'?'w':k==='(vazio)'?'b':'';
+    return `<div class="hb" data-tip="<b>${esc(k)}</b><br>${fmt(v)} recursos · ${pct(v,ix.length,2)}"><div class="k" title="${esc(k)}">${esc(k)}</div><div class="t"><span class="${cls}" style="width:${100*v/max}%"></span></div><div class="n"><b>${fmt(v)}</b> · ${pct(v,ix.length)}</div></div>`}).join('');
+  const vr=D.variants[curTag]||{};const vk=Object.keys(vr);
+  let h='';
+  if(curTag==='CCOWNER'){const dp=D.dePara.filter(d=>d.conf!=='—');h+=`<p>${dp.length} grafias diferentes de responsáveis foram mapeadas no De/Para (tabela abaixo).</p>`}
+  if(vk.length)h+=`<div class="tbl"><table><thead><tr><th>Valor normalizado</th><th>Grafias encontradas</th></tr></thead><tbody>${vk.map(k=>`<tr><td class="m">${esc(k)}</td><td>${vr[k].map(x=>`<span class="pill n">${esc(x)}</span>`).join(' ')}</td></tr>`).join('')}</tbody></table></div>`;
+  else if(curTag!=='CCOWNER')h+=`<p class="muted">Nenhuma variação de caixa para ${curTag}.</p>`;
+  if(curTag==='PRODUTO')h+=`<p class="note" style="margin-top:12px">Possível erro de digitação: <b>SQCONNECT</b> e <b>SQCONNECTT</b>. Não foram unificados automaticamente.</p>`;
+  if(curTag==='CLIENTE'||curTag==='PRODUTO')h+=`<p class="note info" style="margin-top:12px">${curTag}=INDEFINIDO conta como preenchido, mas não como informado.</p>`;
+  $('tagVariants').innerHTML=h;
+  $('deParaPanel').hidden=curTag!=='CCOWNER';
+  if(curTag==='CCOWNER'){
+    const rows=D.dePara.filter(d=>d.conf!=='—');
+    const pc={Alta:'ok','Média':'warn',Pendente:'bad'};
+    $('deParaTbl').innerHTML=`<thead><tr><th>De (valor na tag)</th><th>Para</th><th>Regra</th><th>Confiança da proposta</th><th class="r">Recursos</th></tr></thead><tbody>${rows.map(d=>`<tr><td class="m">${esc(d.de)}</td><td class="m">${esc(d.para)}</td><td>${esc(d.regra)}</td><td><span class="pill ${pc[d.conf]}">${d.conf}</span></td><td class="r">${fmt(d.qtd)}</td></tr>`).join('')}</tbody>`;
+  }
+}
+$('tagSel').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;curTag=b.dataset.t;renderTags()});
+$('ownerCtrl').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;ownerMode=b.dataset.o;$('ownerCtrl').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderTags()});
+
+/* ================= FINOPS ================= */
+function renderFin(){
+  const ix=idxs(), n=ix.length;
+  const bu=counts('BU',ix), mx=bu.length?bu[0][1]:1;
+  $('buBars').innerHTML=bu.map(([k,v])=>`<div class="hb" data-tip="<b>${esc(k)}</b> · ${fmt(v)} recursos"><div class="k">${esc(k)}</div><div class="t"><span class="${k==='(vazio)'?'b':''}" style="width:${100*v/mx}%"></span></div><div class="n"><b>${fmt(v)}</b> · ${pct(v,n)}</div></div>`).join('');
+  // matrix
+  const m=new Map(), buTot=new Map(), ccBUs=new Map();
+  for(const i of ix){const b=val('BU',i)||'(vazio)',c=val('CC',i)||'(vazio)';const k=b+'\u0001'+c;let o=m.get(k);if(!o){o={b,c,n:0,rg:new Set()};m.set(k,o)}o.n++;o.rg.add(R.g[i]);buTot.set(b,(buTot.get(b)||0)+1);if(!ccBUs.has(c))ccBUs.set(c,new Set());ccBUs.get(c).add(b)}
+  const multi=[...ccBUs].filter(([c,s])=>s.size>1).length, ccs=ccBUs.size;
+  const capS=ix.filter(i=>val('CAPEX',i)==='SIM'), capN=ix.filter(i=>val('CAPEX',i)==='NAO').length;
+  const capPrd=capS.filter(i=>val('AMBIENTE',i)==='PRD').length;
+  $('finKpis').innerHTML=[
+    ['BUs',fmt(buTot.size),'valores distintos de BU'],
+    ['Centros de custo',fmt(ccs),`${multi} CC${multi===1?'':'s'} com mais de uma BU`],
+    ['Consistência BU × CC',pct(ccs-multi,ccs),'CCs com BU única na base · oficial pendente'],
+    ['Cobertura FOLIO','—','FOLIO não extraído']
+  ].map(k=>`<div class="panel kpi c3"><div class="eyebrow">${k[0]}</div><div class="v">${k[1]}</div><div class="d">${k[2]}</div></div>`).join('');
+  $('capexBox').innerHTML=`
+    <div class="srow"><div class="lab">CAPEX</div><div class="sbar"><span style="width:${100*capS.length/n}%;background:var(--seq-4)" data-tip="CAPEX=SIM · ${fmt(capS.length)}"></span><span style="width:${100*capN/n}%;background:var(--seq-2)" data-tip="CAPEX=NAO · ${fmt(capN)}"></span></div><div class="vals">SIM <b>${fmt(capS.length)}</b> · NAO <b>${fmt(capN)}</b></div></div>
+    <div class="legend" style="margin:8px 0 14px"><span><i style="background:var(--seq-4)"></i>CAPEX=SIM ${pct(capS.length,n)}</span><span><i style="background:var(--seq-2)"></i>CAPEX=NAO ${pct(capN,n)}</span></div>
+    <div class="tbl"><table><thead><tr><th>Indicador</th><th class="r">Qtde</th><th class="r">% do total</th><th class="r">% de CAPEX=SIM</th></tr></thead><tbody>
+      <tr><td>CAPEX=SIM</td><td class="r">${fmt(capS.length)}</td><td class="r">${pct(capS.length,n)}</td><td class="r">100,0%</td></tr>
+      <tr><td>CAPEX=SIM + AMBIENTE=PRD</td><td class="r">${fmt(capPrd)}</td><td class="r">${pct(capPrd,n)}</td><td class="r">${pct(capPrd,capS.length)}</td></tr>
+      <tr><td>FOLIO preenchido (CAPEX=SIM)</td><td class="r">—</td><td class="r">—</td><td class="r"><span class="pill bad">não extraído</span></td></tr>
+    </tbody></table></div>
+    <p class="note" style="margin-top:12px">A cobertura FOLIO depende da coluna FOLIO na query do Resource Graph. A policy de herança de FOLIO já existe; falta só trazer o dado.</p>`;
+  const onlyMulti=$('ccOnlyMulti').checked;
+  const buOrder=[...buTot].sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+  let rows='';
+  for(const b of buOrder){
+    const items=[...m.values()].filter(o=>o.b===b&&(!onlyMulti||ccBUs.get(o.c).size>1)).sort((x,y)=>y.n-x.n);
+    if(!items.length)continue;
+    const brg=new Set();items.forEach(o=>o.rg.forEach(r=>brg.add(r)));
+    rows+=`<tr class="grp"><td>${esc(b)}</td><td></td><td class="r">${fmt(buTot.get(b))}</td><td class="r">${fmt(brg.size)}</td><td class="r">${pct(buTot.get(b),n)}</td><td class="r">100%</td><td></td></tr>`;
+    rows+=items.map(o=>{const ok=ccBUs.get(o.c).size===1;return `<tr><td></td><td class="m">${esc(o.c)}</td><td class="r">${fmt(o.n)}</td><td class="r">${fmt(o.rg.size)}</td><td class="r"><span class="minibar"><span style="width:${100*o.n/n}%"></span></span>${pct(o.n,n)}</td><td class="r">${pct(o.n,buTot.get(b))}</td><td>${ok?'<span class="pill ok">BU única</span>':'<span class="pill bad">várias BUs</span>'}</td></tr>`}).join('');
+  }
+  $('buccTbl').innerHTML=`<thead><tr><th>BU</th><th>CC</th><th class="r">Recursos</th><th class="r">RGs com recursos</th><th class="r">% do total</th><th class="r">% da BU</th><th>Consistência</th></tr></thead><tbody>${rows||'<tr><td colspan="7" class="muted">Nenhum CC associado a mais de uma BU neste universo.</td></tr>'}</tbody>`;
+}
+$('ccOnlyMulti').addEventListener('change',renderFin);
+
+/* ================= EVOLUÇÃO (fixa) ================= */
+function renderEvo(){
+  const P=D.prod, ok=P.filter(p=>p.status!=='FALHA'), fl=P.filter(p=>p.status==='FALHA');
+  const ex=ok.filter(p=>p.now); let rn=0,rc=0,ri=0;ex.forEach(p=>{rn+=p.now.n;rc+=p.now.classif;ri+=p.now.indef});
+  const sc=idxsScope(), ps=tstat('PRODUTO',sc);
+  $('prodFlow').innerHTML=[
+    ['Antes','830','RGs sem a tag PRODUTO, incluindo Sandbox e Descomissionada'],
+    ['Ação','819','TAG ATRIBUÍDA · PRODUTO=INDEFINIDO · 98,67%'],
+    ['Falhas','11','8 em subscriptions fora da extração atual, 3 no recorte B'],
+    ['Fotografia · RGs com recursos',fmt(ex.length),`de 819 saneados têm recursos na fotografia atual`],
+    ['Hoje · escopo',fmt(ps.vz),`recursos sem PRODUTO no escopo (${pct(ps.vz,ps.n,2)}) · ${pct(ps.cl,ps.n)} informados`]
+  ].map(s=>`<div class="st"><div class="eyebrow">${s[0]}</div><div class="v">${s[1]}</div><p>${s[2]}</p></div>`).join('');
+  const g={};P.forEach(p=>{g[p.onde]=g[p.onde]||{a:0,f:0,e:0};p.status==='FALHA'?g[p.onde].f++:g[p.onde].a++;if(p.existe)g[p.onde].e++});
+  $('prodWhere').innerHTML=`<thead><tr><th>Situação da subscription hoje</th><th class="r">Atribuída</th><th class="r">Falha</th><th class="r">RG com recursos hoje</th></tr></thead><tbody>${Object.entries(g).map(([k,v])=>`<tr><td>${k}</td><td class="r">${fmt(v.a)}</td><td class="r">${fmt(v.f)}</td><td class="r">${fmt(v.e)}</td></tr>`).join('')}<tr class="grp"><td>Total</td><td class="r">819</td><td class="r">11</td><td class="r">${fmt(P.filter(p=>p.existe).length)}</td></tr></tbody>`;
+  $('prodFail').innerHTML=`<thead><tr><th>Subscription</th><th>Resource Group</th><th>Situação atual</th></tr></thead><tbody>${fl.map(p=>{
+    let s;if(p.onde==='Fora da extração atual')s='<span class="pill n">Não verificável</span> subscription fora da extração';
+    else if(!p.existe)s='<span class="pill n">Não observado na extração</span>';
+    else s=`<span class="pill warn">Recursos com INDEFINIDO</span> ${p.now.indef}/${p.now.n} recursos`;
+    return `<tr><td>${esc(p.sub)}</td><td class="m">${esc(p.rg)}</td><td>${s}</td></tr>`}).join('')}</tbody>`;
+  $('prodNote').innerHTML=`<b>Leitura correta do indicador:</b> 98,67% é o sucesso da execução, não o percentual de produto informado. Nos ${fmt(ex.length)} RGs saneados que têm recursos observados, ${fmt(rc)} de ${fmt(rn)} recursos (${pct(rc,rn)}) têm PRODUTO informado além de INDEFINIDO; ${fmt(ri)} seguem como INDEFINIDO. Os 3 RGs com falha observados no recorte B (MANAGED-SVC-PAZ-BO002, databricks-rg-…, ExtraContabilMarketPlace) têm recursos com PRODUTO=INDEFINIDO. Para confirmar a tag do próprio RG é preciso uma extração de resourcecontainers. A coleta e a execução não têm datas confirmadas; esta comparação não comprova quando ocorreu a mudança.`;
+  const w2=D.w2,w3=D.w3,wu=D.wu;
+  const w1=D.w1, w1e=w1.filter(r=>r.existe).length, w1b=w1.filter(r=>r.existe&&Object.keys(r.buAgora).length===1&&r.buAgora.BANCOS).length;
+  $('buFlow').innerHTML=[
+    ['Situação anterior','PAGAMENTOS',`CCs 1410107, 1010102 e outros associados à BU PAGAMENTOS`],
+    ['Ação · Onda 1','147','RGs registrados (referência operacional: 149)'],
+    ['Ação · Ondas 2 + 3',fmt(wu.uniq),`recursos únicos (${fmt(w2.n)} + ${fmt(w3.n)} − ${fmt(D.overlap)} repetidos)`],
+    ['Observados na extração A',fmt(wu.existe),`${pct(wu.existe,wu.uniq)} dos únicos; os demais não foram observados nesta extração`],
+    ['Hoje · BU=BANCOS',pct(wu.buAgora.BANCOS||0,wu.existe),`${fmt(wu.buAgora.BANCOS||0)} recursos · BU PAGAMENTOS restante: ${fmt(D.pagNow)}`]
+  ].map(s=>`<div class="st"><div class="eyebrow">${s[0]}</div><div class="v">${s[1]}</div><p>${s[2]}</p></div>`).join('');
+  $('waveTbl').innerHTML=`<thead><tr><th>Onda</th><th class="r">Registros</th><th class="r">Observados em A</th><th>Leitura</th></tr></thead><tbody>
+   <tr><td>Onda 1 · RGs</td><td class="r">147</td><td class="r">${w1e}</td><td><span class="pill warn">147 × 149</span> diferença de 2 em aberto</td></tr>
+   <tr><td>Onda 2 · recursos</td><td class="r">${fmt(w2.n)}</td><td class="r">${fmt(w2.existe)}</td><td>Processamento principal</td></tr>
+   <tr><td>Onda 3 · recursos</td><td class="r">${fmt(w3.n)}</td><td class="r">${fmt(w3.existe)}</td><td><span class="pill n">reprocessamento</span> ${fmt(D.overlap)} já estavam na Onda 2, ${fmt(D.o3novos)} novos</td></tr>
+   <tr class="grp"><td>Únicos (2 ∪ 3)</td><td class="r">${fmt(wu.uniq)}</td><td class="r">${fmt(wu.existe)}</td><td>Não somar ${fmt(w2.n+w3.n)}</td></tr></tbody>`;
+  const fl2=wu.flow.slice().sort((a,b)=>b[2]-a[2]);
+  $('flowTbl').innerHTML=`<thead><tr><th>Antes (planilha)</th><th>Situação observada</th><th class="r">Recursos</th><th></th></tr></thead><tbody>${fl2.map(([a,b,c])=>{
+    const st=b.startsWith('(sem')?'<span class="pill n">fora do escopo, sem tags</span>':a.split(' · ')[1]!==b.split(' · ')[1]?'<span class="pill warn">CC mudou</span>':a.startsWith('BANCOS')?'<span class="pill n">já era BANCOS</span>':'<span class="pill ok">reinformado</span>';
+    return `<tr><td class="m">${esc(a)}</td><td class="m">${esc(b)}</td><td class="r">${fmt(c)}</td><td>${st}</td></tr>`}).join('')}</tbody>`;
+  $('w1Tbl').innerHTML=`<thead><tr><th>Situação hoje</th><th class="r">RGs com recursos</th></tr></thead><tbody>
+   <tr><td><span class="pill ok">Recursos observados com BU=BANCOS</span></td><td class="r">${w1b}</td></tr>
+   <tr><td><span class="pill warn">BANCOS + outra BU</span> ${w1.filter(r=>r.existe&&Object.keys(r.buAgora).length>1).map(r=>esc(r.rg)).join(', ')}</td><td class="r">${w1.filter(r=>r.existe&&Object.keys(r.buAgora).length>1).length}</td></tr>
+   <tr><td><span class="pill n">Sem recursos na extração</span> RG vazio, removido ou fora da extração</td><td class="r">${w1.length-w1e}</td></tr>
+   <tr class="grp"><td>Total registrado</td><td class="r">${w1.length}</td></tr></tbody>`;
+  const sAll=[];for(let i=0;i<N;i++)sAll.push(i);
+  $('abTbl').innerHTML=`<thead><tr><th>Indicador</th><th>Antes</th><th>Situação observada</th></tr></thead><tbody>
+   <tr><td>Execução histórica PRODUTO</td><td class="m">830 RGs sem a tag registrados</td><td class="m">819 TAG ATRIBUÍDA · 11 FALHA. Atual dos próprios RGs: não coletado</td></tr>
+   <tr><td>PRODUTO preenchido (escopo)</td><td class="m">—</td><td class="m">${pct(ps.fill,ps.n)}</td></tr>
+   <tr><td>PRODUTO informado (escopo)</td><td class="m">—</td><td class="m">${pct(ps.cl,ps.n)}</td></tr>
+   <tr><td>Recursos com BU=PAGAMENTOS</td><td class="m">${fmt(w2.buAntes.PAGAMENTOS+D.o3novos)} (Ondas 2/3, únicos)</td><td class="m">${fmt(D.pagNow)}</td></tr>
+   <tr><td>RGs com BU=PAGAMENTOS</td><td class="m">147 (Onda 1)</td><td class="m">0 com recursos em PAGAMENTOS</td></tr>
+   <tr><td>CC 1410107 → BU</td><td class="m">PAGAMENTOS</td><td class="m">BANCOS</td></tr>
+   <tr><td>CC 1010102 → BU</td><td class="m">PAGAMENTOS</td><td class="m">BANCOS</td></tr>
+   <tr><td>Compliance iniciativas de tags</td><td class="m">—</td><td class="m">100%</td></tr></tbody>`;
+}
+
+/* ================= DETALHAMENTO ================= */
+let selSub=null, selRg=null;
+function agg(ix,keyFn){const m=new Map();for(const i of ix){const k=keyFn(i);let o=m.get(k);if(!o){o={k,n:0,c:0,p:0};m.set(k,o)}o.n++;const c=val('CLIENTE',i),p=val('PRODUTO',i);if(c&&c!=='INDEFINIDO')o.c++;if(p&&p!=='INDEFINIDO')o.p++}return [...m.values()]}
+function renderDet(){
+  const q=$('detQ').value.trim().toLowerCase(), pend=$('detPend').checked;
+  let ix=idxs();
+  if(pend)ix=ix.filter(isPend);
+  if(q)ix=ix.filter(i=>R.n[i].toLowerCase().includes(q)||D.rgs[R.g[i]][0].toLowerCase().includes(q)||D.subs[R.s[i]].name.toLowerCase().includes(q));
+  const subs=agg(ix,i=>R.s[i]).sort((a,b)=>b.n-a.n);
+  if(selSub!=null&&!subs.find(s=>s.k===selSub))selSub=null;
+  if(selSub==null&&subs.length)selSub=subs[0].k;
+  const line=o=>`<div class="bars"><span>CLIENTE ${pct(o.c,o.n,0)}</span><span>PRODUTO ${pct(o.p,o.n,0)}</span></div>`;
+  $('dSubs').innerHTML=subs.map(o=>`<button class="li" data-sub="${o.k}" aria-current="${o.k===selSub}"><span class="nm">${esc(D.subs[o.k].name)} ${D.subs[o.k].inScope?'':'<span class="pill n">fora do escopo</span>'}</span><span class="ct">${fmt(o.n)}</span>${line(o)}</button>`).join('')||'<p class="muted" style="padding:10px">Nada encontrado.</p>';
+  const ixs=ix.filter(i=>R.s[i]===selSub);
+  const rgs=agg(ixs,i=>R.g[i]).sort((a,b)=>(a.p/a.n)-(b.p/b.n)||b.n-a.n);
+  if(selRg!=null&&!rgs.find(r=>r.k===selRg))selRg=null;
+  if(selRg==null&&rgs.length)selRg=rgs[0].k;
+  $('dRgs').innerHTML=rgs.map(o=>`<button class="li" data-rg="${o.k}" aria-current="${o.k===selRg}"><span class="nm">${esc(D.rgs[o.k][0])}</span><span class="ct">${fmt(o.n)}</span>${line(o)}</button>`).join('');
+  const ixr=ixs.filter(i=>R.g[i]===selRg);
+  $('dResH').textContent=selRg!=null?`Recursos · ${D.rgs[selRg][0]} (${ixr.length})`:'Recursos';
+  const cell=v=>v==null?'<span class="pill bad">vazio</span>':v==='INDEFINIDO'?'<span class="pill warn">INDEFINIDO</span>':esc(v);
+  $('dRes').innerHTML=`<table><thead><tr><th>Recurso</th><th>Tipo</th><th>AMB</th><th>BU</th><th>CC</th><th>CAPEX</th><th>CCOWNER</th><th>CLIENTE</th><th>PRODUTO</th></tr></thead><tbody>${ixr.slice(0,400).map(i=>`<tr><td style="overflow-wrap:anywhere;min-width:160px">${esc(R.n[i])}</td><td class="m">${esc(DI.type[R.t[i]].replace(/^microsoft\./,''))}</td><td>${cell(val('AMBIENTE',i))}</td><td>${cell(val('BU',i))}</td><td class="m">${cell(val('CC',i))}</td><td>${cell(val('CAPEX',i))}</td><td>${cell(val('CCOWNER',i))}</td><td>${cell(val('CLIENTE',i))}</td><td>${cell(val('PRODUTO',i))}</td></tr>`).join('')}</tbody></table>${ixr.length>400?`<p class="muted" style="padding:8px">Mostrando 400 de ${fmt(ixr.length)}. Use a busca para filtrar.</p>`:''}`;
+}
+$('dSubs').addEventListener('click',e=>{const b=e.target.closest('[data-sub]');if(!b)return;selSub=+b.dataset.sub;selRg=null;renderDet()});
+$('dRgs').addEventListener('click',e=>{const b=e.target.closest('[data-rg]');if(!b)return;selRg=+b.dataset.rg;renderDet()});
+let qT;$('detQ').addEventListener('input',()=>{clearTimeout(qT);qT=setTimeout(()=>{selSub=null;selRg=null;renderDet()},200)});
+$('detPend').addEventListener('change',()=>{selSub=null;selRg=null;renderDet()});
+
+/* ================= POWER BI ================= */
+$('dax1').textContent=`Recursos = DISTINCTCOUNT ( fRecursoSnapshot[ResourceIdKey] )
+Resource Groups = DISTINCTCOUNT ( fRecursoSnapshot[RGKey] )
+Subscriptions = DISTINCTCOUNT ( fRecursoSnapshot[SubscriptionId] )
+
+Recursos Ultima Coleta =
+    VAR d = CALCULATE ( MAX ( dSnapshot[DataColeta] ), ALL ( dSnapshot ) )
+    RETURN CALCULATE ( [Recursos], dSnapshot[DataColeta] = d )
+
+-- fTagValor filtrada por dTag[Tag] no visual
+Tag Preenchida =
+    CALCULATE ( DISTINCTCOUNT ( fTagValor[ResourceIdKey] ),
+        fTagValor[Status] IN { "Informado", "Indefinido" } )
+Tag Informada =
+    CALCULATE ( DISTINCTCOUNT ( fTagValor[ResourceIdKey] ),
+        fTagValor[Status] = "Informado" )
+Tag Indefinida =
+    CALCULATE ( DISTINCTCOUNT ( fTagValor[ResourceIdKey] ),
+        fTagValor[Status] = "Indefinido" )
+Tag Vazia = [Recursos] - [Tag Preenchida]
+
+% Preenchida  = DIVIDE ( [Tag Preenchida], [Recursos] )
+% Informada = DIVIDE ( [Tag Informada], [Recursos] )
+% Indefinida  = DIVIDE ( [Tag Indefinida], [Recursos] )
+
+-- Universos (dSubscription[NoEscopo] vem do MG)
+Recursos Escopo = CALCULATE ( [Recursos], dSubscription[NoEscopo] = TRUE () )
+Recursos Fora Escopo = CALCULATE ( [Recursos], dSubscription[NoEscopo] = FALSE () )
+
+-- RG com pendência (ao menos 1 recurso CLIENTE/PRODUTO não informado)
+RGs com Pendencia =
+    CALCULATE ( DISTINCTCOUNT ( fRecursoSnapshot[RGKey] ),
+        FILTER ( fRecursoSnapshot,
+            fRecursoSnapshot[CLIENTE] IN { "INDEFINIDO", BLANK () }
+         || fRecursoSnapshot[PRODUTO] IN { "INDEFINIDO", BLANK () } ) )`;
+$('dax2').textContent=`Recursos CAPEX SIM =
+    CALCULATE ( [Recursos], fRecursoSnapshot[CAPEX] = "SIM" )
+FOLIO Preenchido CAPEX SIM =
+    CALCULATE ( [Recursos], fRecursoSnapshot[CAPEX] = "SIM",
+        NOT ISBLANK ( fRecursoSnapshot[FOLIO] ) )
+Cobertura FOLIO = DIVIDE ( [FOLIO Preenchido CAPEX SIM], [Recursos CAPEX SIM] )
+
+CAPEX SIM PRD =
+    CALCULATE ( [Recursos], fRecursoSnapshot[CAPEX] = "SIM",
+        fRecursoSnapshot[AMBIENTE] = "PRD" )
+% CAPEX SIM PRD s/ Total = DIVIDE ( [CAPEX SIM PRD], [Recursos] )
+% CAPEX SIM PRD s/ CAPEX = DIVIDE ( [CAPEX SIM PRD], [Recursos CAPEX SIM] )
+
+-- Coluna calculada em fRecursoSnapshot
+BU_CC_Conforme =
+    VAR buOf = RELATED ( dBUCC_Oficial[BU_Oficial] )
+    RETURN IF ( ISBLANK ( buOf ), "Sem mapeamento",
+              IF ( buOf = fRecursoSnapshot[BU], "Conforme", "Divergente" ) )
+% Conformidade BU CC =
+    DIVIDE ( CALCULATE ( [Recursos], fRecursoSnapshot[BU_CC_Conforme] = "Conforme" ),
+             CALCULATE ( [Recursos], fRecursoSnapshot[BU_CC_Conforme] <> "Sem mapeamento" ) )
+
+-- Saneamento
+RGs Produto Atribuidos =
+    CALCULATE ( DISTINCTCOUNT ( fSaneamento[ChaveObjeto] ),
+        fSaneamento[Acao] = "PRODUTO", fSaneamento[Status] = "TAG ATRIBUÍDA" )
+Sucesso Execucao Produto =
+    DIVIDE ( [RGs Produto Atribuidos],
+        CALCULATE ( DISTINCTCOUNT ( fSaneamento[ChaveObjeto] ), fSaneamento[Acao] = "PRODUTO" ) )
+Recursos Unicos Reinformados =
+    CALCULATE ( DISTINCTCOUNT ( fSaneamento[ChaveObjeto] ),
+        fSaneamento[Acao] = "BU_PAG_BANCOS", fSaneamento[Granularidade] = "Recurso" )
+Recursos Reprocessados Onda3 =
+    CALCULATE ( DISTINCTCOUNT ( fSaneamento[ChaveObjeto] ),
+        fSaneamento[Onda] = "Onda3", fSaneamento[TambemNaOnda2] = TRUE () )
+BU PAGAMENTOS Atual =
+    CALCULATE ( [Recursos Ultima Coleta], fRecursoSnapshot[BU] = "PAGAMENTOS" )
+
+-- Policy
+Compliance Geral = DIVIDE ( SUM ( fPolicyCompliance[Compliant] ), SUM ( fPolicyCompliance[Total] ) )
+Compliance Tags =
+    CALCULATE ( [Compliance Geral], fPolicyCompliance[EhTag] = TRUE () )`;
+$('kql').textContent=`// ...query atual (resources | where ... | project ...)
+| extend FOLIO = coalesce(tostring(tags.FOLIO), tostring(tags.Folio), tostring(tags.folio))
+| extend STATUS_FOLIO = iif(isempty(FOLIO), "INEXISTENTE", "PREENCHIDA")
+| extend DataColeta = now()
+
+// Tags dos próprios RGs (para o confronto das falhas de PRODUTO e Onda 1)
+resourcecontainers
+| where type == "microsoft.resources/subscriptions/resourcegroups"
+| join kind=leftouter (resourcecontainers
+    | where type == "microsoft.resources/subscriptions"
+    | project subscriptionId, Subscription = name) on subscriptionId
+| project Subscription, subscriptionId, ResourceGroup = name,
+    PRODUTO = coalesce(tostring(tags.PRODUTO), tostring(tags.Produto), tostring(tags.produto)),
+    BU = coalesce(tostring(tags.BU), tostring(tags.Bu), tostring(tags.bu)),
+    CC = coalesce(tostring(tags.CC), tostring(tags.Cc), tostring(tags.cc)),
+    DataColeta = now()`;
+$('pbiPages').innerHTML=`<thead><tr><th>Página</th><th>Visuais</th></tr></thead><tbody>
+ <tr><td>Visão Executiva</td><td>Cartões Subs/RGs/Recursos, barra 100% empilhada por tag (Informado/Indefinido/Vazio), dois cartões de Policy, segmentação Universo</td></tr>
+ <tr><td>Distribuição das Tags</td><td>Segmentação dTag, barras horizontais por ValorNorm, tabela Propostas de De/Para CCOWNER</td></tr>
+ <tr><td>FinOps / BU × CC</td><td>Matriz BU (linhas) × CC com Recursos, RGs, % do total; cartões CAPEX, CAPEX SIM PRD e Cobertura FOLIO</td></tr>
+ <tr><td>Evolução</td><td>Funil Antes → Ação → Hoje; tabela das ondas com únicos; linha de % informado por DataColeta</td></tr>
+ <tr><td>Detalhamento</td><td>Matriz hierárquica Subscription → RG → Recurso com formatação condicional de pendências</td></tr></tbody>`;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-copy]');if(!b)return;const t=$(b.dataset.copy).textContent;
+  navigator.clipboard.writeText(t).then(()=>{b.textContent='Copiado';setTimeout(()=>b.textContent='Copiar',1500)}).catch(()=>{const r=document.createRange();r.selectNodeContents($(b.dataset.copy));const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Selecionado'})});
+
+
+// Garantir linguagem e evidência consistentes após cada atualização de filtros.
+const originalExec=renderExec;
+renderExec=function(){originalExec();
+  const answers=$('qa').querySelectorAll('dd');
+  answers[0].textContent=`${scopeName[scope]}: contagem de recursos e de subscriptions/RGs com recursos observados. Escopo por Management Group depende da hierarquia oficial da coleta.`;
+  answers[1].textContent=`Preenchimento calculado individualmente por tag no gráfico acima. INDEFINIDO conta como preenchido; FOLIO não foi coletado.`;
+  answers[6].textContent=`Histórico PRODUTO: 819 atribuições em 830 RGs. Foto B: 12 recursos sem PRODUTO. Não há taxa Antes × Depois comparável entre esses universos.`;
+  $('policy').querySelectorAll('.d').forEach(x=>x.textContent+=' · informado pelo usuário');
+};
+const originalEvo=renderEvo;
+renderEvo=function(){originalEvo();
+  $('abTbl').querySelectorAll('tbody tr')[3].cells[2].textContent='0 observado nas extrações atuais; coorte e datas não confirmadas';
+  $('abTbl').querySelectorAll('tbody tr')[4].cells[2].textContent='Não há tags dos próprios RGs na fotografia';
+  const note=document.createElement('p');note.className='note info';note.textContent='Nesta aba, os cruzamentos históricos usam a extração A: 2.677 IDs observados, sendo 2.675 com BU=BANCOS. No recorte B são 2.658, todos com BU=BANCOS. Não observados não significam excluídos. Sem datas de coleta/execução, a situação observada não comprova evolução temporal.';
+  $('buFlow').after(note);note.id='historicalScopeNote';
+  const all=document.querySelectorAll('#historicalScopeNote');all.forEach((x,i)=>{if(i<all.length-1)x.remove()});
+};
+/* ================= NAV ================= */
+let page='exec';
+function render(){({exec:renderExec,tags:renderTags,fin:renderFin,evo:renderEvo,det:renderDet,pbi:()=>{}})[page]();
+  const fixed=page==='evo'||page==='pbi';$('scopeSeg').style.opacity=fixed?.45:1;$('scopeSeg').title=fixed?'Esta aba usa a base histórica e não muda com o universo':'';}
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;page=b.dataset.p;
+  $('tabs').querySelectorAll('button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  document.querySelectorAll('section.page').forEach(s=>s.hidden=s.id!=='p-'+page);render();try{localStorage.setItem('gt-page',page)}catch(_){}});
+$('scopeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;scope=b.dataset.s;
+  $('scopeSeg').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));selSub=null;selRg=null;render()});
+/* Refresh sempre inicia na Visão Executiva, sem restaurar navegação anterior. */
+try{localStorage.removeItem('gt-page')}catch(_){}
+render();
+</script>
+
+<script id="historyData" type="application/json">__TAGS_HISTORICO__</script>
+<script>
+const H=JSON.parse(document.getElementById("historyData").textContent);
+// A validação ocorre no navegador; após validação, a fotografia compacta é gravada pelo Web App.
+function parseCSV(text){
+ text=text.replace(/^\uFEFF/,'');
+ const first=text.split(/\r?\n/)[0];const delim=(first.match(/;/g)||[]).length>(first.match(/,/g)||[]).length?';':',';
+ const rows=[];let row=[],cell='',quoted=false;
+ for(let i=0;i<text.length;i++){
+  const c=text[i];
+  if(c==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++}else if(quoted||cell==='')quoted=!quoted;else throw Error('Aspas inválidas no CSV.');}
+  else if(c===delim&&!quoted){row.push(cell);cell='';}
+  else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cell);if(row.some(v=>v.trim()))rows.push(row);row=[];cell='';}
+  else cell+=c;
+ }
+ if(quoted)throw Error('Campo com aspas não fechado no CSV.');
+ row.push(cell);if(row.some(v=>v.trim()))rows.push(row);
+ if(rows.length<2)throw Error('Arquivo vazio ou sem recursos.');
+ const headers=rows.shift().map(v=>v.trim().toUpperCase());
+ if(new Set(headers).size!==headers.length)throw Error('Colunas duplicadas, inclusive nomes que diferem somente em caixa.');
+ const required=['RESOURCEID','RESOURCENAME','RESOURCETYPE','SUBSCRIPTION','SUBSCRIPTIONID','RESOURCEGROUP','AMBIENTE','BU','CAPEX','CC','CCOWNER','CLIENTE','PRODUTO'];
+ const absent=required.filter(x=>!headers.includes(x));if(absent.length)throw Error('Colunas obrigatórias ausentes: '+absent.join(', '));
+ const index=new Map();let duplicates=0;const incompleteRows=[];
+ for(const [i,cells] of rows.entries()){
+  if(cells.length!==headers.length){incompleteRows.push(i+2);continue;}
+  const r=Object.fromEntries(headers.map((h,j)=>[h,cells[j].trim()]));
+  const id=r.RESOURCEID.toLowerCase().replace(/\/+$/,'');
+  if(!id.startsWith('/subscriptions/')||!r.SUBSCRIPTIONID||!r.RESOURCEGROUP)throw Error('Identidade Azure inválida na linha '+(i+2));
+  const rg='/subscriptions/'+r.SUBSCRIPTIONID.toLowerCase()+'/resourcegroups/'+r.RESOURCEGROUP.toLowerCase();
+  if(!id.startsWith(rg+'/providers/'))throw Error('ResourceId não corresponde à Subscription/ResourceGroup na linha '+(i+2));
+  r.RESOURCEID=id;r.SUBSCRIPTIONID=r.SUBSCRIPTIONID.toLowerCase();
+  if(index.has(id)){
+   const previous=index.get(id);
+   const conflict=headers.filter(k=>k!=='DATA_EXTRACAO_UTC').some(k=>{
+    const low=['RESOURCEID','SUBSCRIPTIONID','RESOURCEGROUP','RESOURCETYPE'];return low.includes(k)?previous[k].toLowerCase()!==r[k].toLowerCase():previous[k]!==r[k];
+   });
+   if(conflict)throw Error('ResourceId duplicado com dados conflitantes: '+id);
+   duplicates++;continue;
+  }
+  index.set(id,r);
+ }
+ if(incompleteRows.length)throw Error(`${incompleteRows.length} linha(s) incompleta(s) ou com colunas excedentes: ${incompleteRows.slice(0,10).join(', ')}${incompleteRows.length>10?'…':''}`);
+ const dates=[...new Set([...index.values()].map(r=>r.DATACOLETA||r.DATA_EXTRACAO_UTC||'').filter(Boolean))];
+ return {index,headers,duplicates,incompleteRows:incompleteRows.length,lines:rows.length,dates,delimiter:delim};
+}
+function prepareGovernanceImport(parsed){
+ const hasEligibility=parsed.headers.includes('ELEGIVEL_GOVERNANCA');
+ const source=[...parsed.index.values()];
+ const countBy=key=>source.reduce((acc,row)=>{const value=(row[key]||'(VAZIO)').trim()||'(VAZIO)';acc[value]=(acc[value]||0)+1;return acc},{});
+ const eligibility=value=>String(value||'').trim().toUpperCase();
+ const traceRows=source.filter(row=>eligibility(row.ELEGIVEL_GOVERNANCA)!=='SIM');
+ const traceability={
+  id:traceRows.map(row=>row.RESOURCEID),eligibility:traceRows.map(row=>eligibility(row.ELEGIVEL_GOVERNANCA)||'(VAZIO)'),
+  inventoryClass:traceRows.map(row=>row.CLASSE_INVENTARIO||''),reason:traceRows.map(row=>row.MOTIVO_NAO_ELEGIVEL||''),rule:traceRows.map(row=>row.REGRA_EXCLUSAO||''),
+  rows:traceRows.map(row=>({id:row.RESOURCEID,name:row.RESOURCENAME||'',type:row.RESOURCETYPE||'',subscription:row.SUBSCRIPTION||'',subscriptionId:row.SUBSCRIPTIONID||'',resourceGroup:row.RESOURCEGROUP||'',eligibility:eligibility(row.ELEGIVEL_GOVERNANCA)||'(VAZIO)',inventoryClass:row.CLASSE_INVENTARIO||'',reason:row.MOTIVO_NAO_ELEGIVEL||'',rule:row.REGRA_EXCLUSAO||'',scope:row.ESCOPO_HIERARQUIA||'',managementGroups:row.MANAGEMENTGROUPSRAW||row.MANAGEMENT_GROUPS||''}))
+ };
+ const audit={
+  sourceRows:parsed.lines,sourceUniqueResources:parsed.index.size,
+  contractVersions:countBy('VERSAO_CONTRATO'),eligibility:countBy('ELEGIVEL_GOVERNANCA'),
+  inventoryClasses:countBy('CLASSE_INVENTARIO'),vmApplicability:countBy('APLICABILIDADE_TAGS_VM'),
+  duplicates:parsed.duplicates,incompleteRows:parsed.incompleteRows||0,delimiter:parsed.delimiter
+ };
+ if(!hasEligibility)return {...parsed,audit,traceability,eligibilityApplied:false};
+ const index=new Map([...parsed.index].filter(([,row])=>eligibility(row.ELEGIVEL_GOVERNANCA)==='SIM'));
+ if(!index.size)throw Error('O arquivo possui ELEGIVEL_GOVERNANCA, mas nenhum recurso marcado como SIM.');
+ return {...parsed,index,audit,traceability,eligibilityApplied:true};
+}
+function buildData(a,b,meta,history){
+ const absent=[...b.index.keys()].filter(id=>!a.index.has(id));
+ if(a.headers.includes('FOLIO')!==b.headers.includes('FOLIO'))throw Error('FOLIO precisa ser extraído nos dois CSVs, ou em nenhum deles.');
+ let differences=0;
+ for(const [id,r] of b.index){const full=a.index.get(id);if(!full)continue;for(const k of ['AMBIENTE','BU','CAPEX','CC','CCOWNER','CLIENTE','PRODUTO','FOLIO'])if((r[k]||'')!==(full[k]||'')){differences++;break;}}
+ // Reconciliação tolerante a coletas sequenciais: Governança é autoritativa dentro do
+ // escopo e o CSV completo é autoritativo fora dele. Assim, recursos criados/removidos
+ // entre as duas consultas não bloqueiam a fotografia nem distorcem o recorte governado.
+ const complete=new Map(a.index);for(const [id,r] of b.index)complete.set(id,r);
+ const normalize=v=>(v||'').trim().toUpperCase();
+ const d={meta,dupFull:a.duplicates,nScopeRows:b.index.size,inventoryTrace:b.traceability||null,subs:[],rgs:[],dict:{type:[]},R:{s:[],g:[],n:[],t:[],sc:[],id:[]},variants:{},dePara:[],prod:[],w1:[],pagNow:0};
+ const modelTags=[...new Set([...TAGS,...VM_TAGS,...SUBSCRIPTION_TAGS])];
+ const statusFields=modelTags.map(tag=>'STATUS_'+tag);
+ const columns=[...new Set([...modelTags,'CCOWNER_RAW',...statusFields,...INVENTORY_FIELDS])];
+ const maps={type:new Map()};for(const t of columns){d.dict[t]=[];d.R[t]=[];maps[t]=new Map();}
+ function valueIndex(k,v){if(!v)return -1;if(!maps[k].has(v)){maps[k].set(v,d.dict[k].length);d.dict[k].push(v)}return maps[k].get(v);}
+ const sm=new Map(),gm=new Map(),byrg=new Map(),variants={},owners=new Map();
+ for(const [id,r] of complete){
+  const sc=b.index.has(id)?1:0;const sid=r.SUBSCRIPTIONID;
+  if(!sm.has(sid)){sm.set(sid,d.subs.length);d.subs.push({id:sid,name:r.SUBSCRIPTION,inScope:false,RBU:normalize(r.RBU),RFIN:normalize(r.RFIN),STATUS_RBU:normalize(r.STATUS_RBU),STATUS_RFIN:normalize(r.STATUS_RFIN),subscriptionTagConflict:false});}
+  const si=sm.get(sid);if(sc)d.subs[si].inScope=true;
+  if(d.subs[si].RBU!==normalize(r.RBU)||d.subs[si].RFIN!==normalize(r.RFIN))d.subs[si].subscriptionTagConflict=true;
+  const rgid='/subscriptions/'+sid+'/resourcegroups/'+r.RESOURCEGROUP.toLowerCase();
+  if(!gm.has(rgid)){gm.set(rgid,d.rgs.length);d.rgs.push([r.RESOURCEGROUP.toLowerCase(),si]);}
+  if(!byrg.has(rgid))byrg.set(rgid,[]);byrg.get(rgid).push(r);
+  d.R.s.push(si);d.R.g.push(gm.get(rgid));d.R.n.push(r.RESOURCENAME);d.R.t.push(valueIndex('type',r.RESOURCETYPE.toLowerCase()));d.R.sc.push(sc);d.R.id.push(id);
+  for(const t of columns){const original=t==='CCOWNER_RAW'?r.CCOWNER:r[t]||'';const v=t==='CCOWNER_RAW'?original:normalize(original);d.R[t].push(valueIndex(t,v));
+   if(t!=='CCOWNER_RAW'&&original){variants[t]??=new Map();if(!variants[t].has(v))variants[t].set(v,new Set());variants[t].get(v).add(original);}
+  }
+  if(r.CCOWNER){if(!owners.has(r.CCOWNER))owners.set(r.CCOWNER,{de:r.CCOWNER,para:normalize(r.CCOWNER),regra:'Somente caixa; identidade não consolidada',conf:r.CCOWNER===normalize(r.CCOWNER)?'—':'Alta',qtd:0,qtdEsc:0});owners.get(r.CCOWNER).qtd++;owners.get(r.CCOWNER).qtdEsc+=sc;}
+  if(normalize(r.BU)==='PAGAMENTOS')d.pagNow++;
+ }
+ for(const t of Object.keys(variants)){d.variants[t]={};for(const [v,s] of variants[t])if(s.size>1)d.variants[t][v]=[...s];}
+ d.dePara=[...owners.values()].sort((x,y)=>y.qtd-x.qtd);
+ const ns=new Map();for(const s of d.subs){if(!ns.has(s.name.toUpperCase()))ns.set(s.name.toUpperCase(),[]);ns.get(s.name.toUpperCase()).push(s);}
+ const count=(rows,k)=>{const o={};rows.forEach(r=>{const v=normalize(r[k])||'(sem '+k+')';o[v]=(o[v]||0)+1});return o;};
+ for(const p of history.prod){const rows=byrg.get(p.id)||[];const sid=p.id.split('/')[2];const si=sm.get(sid);
+  d.prod.push({sub:p.sub,rg:p.rg,status:p.status,onde:si===undefined?'Fora da extração atual':d.subs[si].inScope?'Recorte Governança':'Somente no CSV completo',existe:rows.length>0,now:rows.length?{n:rows.length,classif:rows.filter(r=>normalize(r.PRODUTO)&&normalize(r.PRODUTO)!=='INDEFINIDO').length,indef:rows.filter(r=>normalize(r.PRODUTO)==='INDEFINIDO').length}:null});
+ }
+ for(const p of history.w1){const matches=ns.get(p.sub.toUpperCase())||[];const rows=matches.length===1?byrg.get('/subscriptions/'+matches[0].id+'/resourcegroups/'+p.rg.toLowerCase())||[]:[];
+  d.w1.push({...p,existe:rows.length>0,inScope:rows.some(r=>b.index.has(r.RESOURCEID)),buAgora:count(rows,'BU'),ccAgora:count(rows,'CC'),n:rows.length});}
+ function summarize(events){const unique=new Map();events.forEach(e=>{if(!unique.has(e.id))unique.set(e.id,e)});const x={n:events.length,uniq:unique.size,buAntes:{},ccAntes:{},existe:0,inScope:0,buAgora:{},flow:[],tipos:{},tiposDeletados:{}};const flows=new Map();
+  for(const e of unique.values()){x.buAntes[e.bu]=(x.buAntes[e.bu]||0)+1;x.ccAntes[e.cc]=(x.ccAntes[e.cc]||0)+1;x.tipos[e.type]=(x.tipos[e.type]||0)+1;const now=complete.get(e.id);
+   if(now){x.existe++;if(b.index.has(e.id))x.inScope++;const bu=normalize(now.BU)||'(sem BU)',cc=normalize(now.CC)||'(sem CC)';x.buAgora[bu]=(x.buAgora[bu]||0)+1;const key=e.bu+' · '+e.cc+'\u0001'+bu+' · '+cc;flows.set(key,(flows.get(key)||0)+1);}
+   else x.tiposDeletados[e.type]=(x.tiposDeletados[e.type]||0)+1;
+  }x.flow=[...flows].map(([k,n])=>[...k.split('\u0001'),n]);return x;
+ }
+ d.w2=summarize(history.w2);d.w3=summarize(history.w3);d.wu=summarize([...history.w2,...history.w3]);
+ const i2=new Set(history.w2.map(e=>e.id)),i3=new Set(history.w3.map(e=>e.id));d.overlap=[...i3].filter(i=>i2.has(i)).length;d.o3novos=i3.size-d.overlap;
+ d.meta={...meta,modelSchema:'EVERTEC_DASHBOARD_2',sourceContract:Object.keys(b.audit?.contractVersions||{})[0]||'',inventoryAudit:b.audit||null,eligibilityApplied:!!b.eligibilityApplied,folioCollected:a.headers.includes('FOLIO'),aLines:a.lines,bLines:b.lines,bDuplicates:b.duplicates,scopeOnlyAdded:absent.length,tagDifferencesReconciled:differences,reconciliationApplied:absent.length>0||differences>0};return d;
+}
+function syncEvidence(){
+ const m=D.meta||{};document.getElementById('collectionLabel').textContent=m.date?'ATUALIZADO EM '+m.date.split('-').reverse().join('/'):'DATA DE ATUALIZAÇÃO NÃO INFORMADA';
+ const reconciliation=m.reconciliationApplied?` Reconciliação: ${fmt(m.scopeOnlyAdded||0)} IDs exclusivos da Governança incorporados e ${fmt(m.tagDifferencesReconciled||0)} divergências de tags priorizadas pelo CSV de Governança.`:'';
+ document.getElementById('importState').textContent=`Atual: ${fmt(N)} recursos no ambiente reconciliado; ${fmt(D.nScopeRows)} em Governança; ${fmt(N-D.nScopeRows)} fora de Governança. ${D.dupFull} duplicatas removidas do completo.${reconciliation}`;
+}
+function metricPct(value,total){return total?((100*value/total).toFixed(1).replace('.',',')+'%'):'—'}
+function historyRows(snapshots){
+ const ordered=[...snapshots].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.savedAt||'').localeCompare(String(b.savedAt||'')));
+ const row=s=>{const g=s.summary?.governance||{},c=g.tags?.CLIENTE||{},p=g.tags?.PRODUTO||{};return {s,g,c,p}};
+ const latest=[...snapshots].filter(x=>!x.baseline).sort((a,b)=>String(b.savedAt).localeCompare(String(a.savedAt)))[0];
+ const body=$('snapshotHistory')?.querySelector('tbody');
+ if(body)body.innerHTML=[...snapshots].sort((a,b)=>String(b.savedAt||'').localeCompare(String(a.savedAt||''))).map(s=>{const {g,c,p}=row(s);return `<tr><td><b>${esc(s.date?s.date.split('-').reverse().join('/'):'Baseline')}</b>${s.id===latest?.id?' <span class="badge ok">Atual</span>':''}</td><td>${s.savedAt?esc(new Date(s.savedAt).toLocaleString('pt-BR')):'Deploy inicial'}</td><td>${fmt(g.resources||0)}</td><td>${fmt(g.resourceGroups||0)}</td><td>${fmt(g.subscriptions||0)}</td><td>${metricPct(c.classified,c.total)}</td><td>${metricPct(p.classified,p.total)}</td><td>${esc(s.savedBy||'—')}</td></tr>`}).join('');
+ const evo=$('snapshotEvolution')?.querySelector('tbody');
+ if(evo)evo.innerHTML=ordered.map((s,i)=>{const {g,c,p}=row(s),prev=i?row(ordered[i-1]).g:null,delta=prev?(g.resources||0)-(prev.resources||0):null;return `<tr><td><b>${esc(s.date?s.date.split('-').reverse().join('/'):'Baseline')}</b></td><td>${fmt(g.resources||0)}</td><td>${delta==null?'—':(delta>0?'+':'')+fmt(delta)}</td><td>${fmt(g.resourceGroups||0)}</td><td>${metricPct(c.classified,c.total)}</td><td>${metricPct(p.classified,p.total)}</td></tr>`}).join('');
+}
+async function loadSnapshotHistory(){
+ try{const response=await fetch('/api/tags/snapshots',{headers:{Accept:'application/json'}});if(!response.ok)throw Error('HTTP '+response.status);historyRows((await response.json()).snapshots||[])}
+ catch(e){const body=$('snapshotHistory')?.querySelector('tbody');if(body)body.innerHTML='<tr><td colspan="8">Histórico disponível somente na versão publicada no Web App.</td></tr>';}
+}
+async function persistSnapshot(snapshot){
+ const response=await fetch('/api/tags/snapshots',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({snapshot})});
+ let result={};try{result=await response.json()}catch(_){}
+ if(!response.ok||!result.ok)throw Error(result.error||('Falha ao gravar no Web App: HTTP '+response.status));
+ return result.snapshot;
+}
+async function applyImport(){
+ const msg=$('importMessage'),button=$('applyImport');button.disabled=true;
+ try{
+  const af=$('csvFull').files[0],bf=$('csvScope').files[0];if(!af||!bf)throw Error('Selecione os dois CSVs.');
+  msg.textContent='Lendo e validando os arquivos…';
+  const a=parseCSV(await af.text()),b=parseCSV(await bf.text());let date=$('collectionDate').value;
+  if(!date){const dates=[...new Set([...a.dates,...b.dates].map(x=>x.slice(0,10)))];if(dates.length===1&&/^\d{4}-\d{2}-\d{2}$/.test(dates[0]))date=dates[0];}
+  if(!date)throw Error('Informe a data real em que estas extrações foram coletadas.');
+  const embeddedDates=[...new Set([...a.dates,...b.dates].map(x=>x.slice(0,10)))];
+  if(embeddedDates.some(x=>x!==date))throw Error('A DataColeta dos arquivos diverge da data selecionada, ou há mais de uma coleta no arquivo.');
+  const candidate=buildData(a,b,{date,fullFile:af.name,scopeFile:bf.name},H);
+  msg.textContent='Validação concluída. Gravando fotografia no histórico do Web App…';
+  await persistSnapshot(candidate);
+  D=candidate;R=D.R;N=R.s.length;DI=D.dict;selSub=null;selRg=null;scope='esc';curTag='AMBIENTE';
+  $('scopeSeg').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.s==='esc'));
+  render();syncEvidence();await loadSnapshotHistory();
+  const rec=candidate.meta.scopeOnlyAdded||candidate.meta.tagDifferencesReconciled?` Reconciliação aplicada: ${candidate.meta.scopeOnlyAdded||0} IDs exclusivos da Governança incorporados e ${candidate.meta.tagDifferencesReconciled||0} divergências de tags priorizadas pelo CSV de Governança.`:'';
+  msg.textContent='Fotografia gravada. Esta coleta agora será carregada para todos os usuários autorizados.'+rec;
+ }catch(e){msg.textContent='Não atualizado: '+e.message;}finally{button.disabled=false;}
+}
+function serializeDashboard(){
+ // Exporta a estrutura original; não captura a página parcialmente renderizada.
+ const root=new DOMParser().parseFromString(document.documentElement.outerHTML,'text/html');
+ root.getElementById('data').textContent=JSON.stringify(D).replace(/</g,'\\u003c');
+ root.getElementById('historyData').textContent=JSON.stringify(H).replace(/</g,'\\u003c');
+ root.querySelectorAll('section.page').forEach(s=>s.hidden=s.id!=='p-exec');
+ root.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.p==='exec'));
+ root.getElementById('importMessage').textContent='';root.getElementById('collectionDate').setAttribute('value',D.meta?.date||'');
+ root.getElementById('applyImport').removeAttribute('disabled');
+ return '<!doctype html>\n'+root.documentElement.outerHTML;
+}
+function saveDashboard(){const blob=new Blob([serializeDashboard()],{type:'text/html;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Dashboard_Evertec_'+(D.meta?.date||'sem_data')+'.html';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+$('applyImport').addEventListener('click',applyImport);$('saveDashboard').addEventListener('click',saveDashboard);
+syncEvidence();loadSnapshotHistory();
+
+const importExec=renderExec;
+renderExec=function(){importExec();const ix=idxs(),answers=$('qa').querySelectorAll('dd');
+ answers[4].textContent=`Execução PRODUTO: 819 sucessos em 830 RGs. Histórico de ondas: ${fmt(D.wu.uniq)} ResourceIds únicos registrados. O cruzamento atual não comprova sucesso de cada execução.`;
+ answers[6].textContent=`PRODUTO histórico: 819 atribuições em 830 RGs. Na coleta atual, ${fmt(tstat('PRODUTO',idxsScope()).vz)} recursos do CSV de Governança estão sem PRODUTO. São universos distintos, sem taxa direta de redução.`;
+ $('gaps').innerHTML=[D.meta?.folioCollected?'FOLIO foi coletado. Sua cobertura usa somente recursos CAPEX=SIM.':'FOLIO não coletado. Inclua a coluna nas duas consultas para habilitar o indicador.', 'Mapa BU×CC oficial não carregado. Consistência interna não equivale a conformidade financeira.', 'Data de coleta: '+(D.meta?.date||'não informada')+'. Escopo determinado pela lista de ResourceIds do CSV de Governança, conforme consultas declaradas.', 'Subscriptions e RGs são contagens de entidades com recursos observados, não inventários completos dos próprios RGs/subscriptions.', 'Onda 1: 147 RGs registrados versus referência operacional de 149. Divergência preservada.', 'Azure Policy: ≈98% geral e 100% Tags são valores informados anteriormente; as novas extrações não atualizam esses percentuais.'].map(x=>`<li>${esc(x)}</li>`).join('');
+};
+const importFin=renderFin;
+renderFin=function(){importFin();if(D.meta?.folioCollected){const ix=idxs(),cap=ix.filter(i=>val('CAPEX',i)==='SIM'),filled=cap.filter(i=>val('FOLIO',i)!=null).length,capNo=ix.filter(i=>val('CAPEX',i)==='NAO'),filledNo=capNo.filter(i=>val('FOLIO',i)!=null).length;
+ $('finKpis').lastElementChild.querySelector('.v').textContent=pct(filled,cap.length);$('finKpis').lastElementChild.querySelector('.d').textContent=fmt(filled)+' de '+fmt(cap.length)+' recursos CAPEX=SIM';
+ const table=$('capexBox').querySelector('table'),row=table.querySelector('tbody').lastElementChild;row.cells[1].textContent=fmt(filled);row.cells[2].textContent=pct(filled,ix.length);row.cells[3].textContent=pct(filled,cap.length);
+ row.insertAdjacentHTML('afterend',`<tr><td>CAPEX=NAO + FOLIO preenchido</td><td class="r">${fmt(filledNo)}</td><td class="r">${pct(filledNo,ix.length)}</td><td class="r">N/A</td></tr>`);
+ $('capexBox').querySelector('.note').innerHTML='Cobertura técnica de FOLIO somente em CAPEX=SIM; presença não valida o formato. <b>'+fmt(filledNo)+' de '+fmt(capNo.length)+' recursos CAPEX=NAO possuem FOLIO preenchido</b> e devem ser revisados com as áreas.';
+}};
+const importEvo=renderEvo;
+renderEvo=function(){importEvo();let note=$('historicalScopeNote');if(note)note.textContent=`Cruzamento com o CSV completo atual: ${fmt(D.wu.existe)} IDs históricos observados, ${fmt(D.wu.buAgora.BANCOS||0)} com BU=BANCOS. ${fmt(D.wu.inScope)} observados no CSV de Governança. Não observados não significam excluídos.`;
+ const fails=D.prod.filter(p=>p.status==='FALHA'),outside=fails.filter(p=>p.onde==='Fora da extração atual').length;
+ $('prodFlow').children[2].querySelector('p').textContent=outside+' em subscriptions não observadas no CSV completo; '+(fails.length-outside)+' em subscriptions observadas.';
+ const present=D.prod.filter(p=>p.status==='TAG ATRIBUÍDA'&&p.now),rn=present.reduce((s,p)=>s+p.now.n,0),rc=present.reduce((s,p)=>s+p.now.classif,0);
+ $('prodNote').textContent=`98,67% é sucesso da execução histórica em RGs. Os ${fmt(present.length)} RGs com atribuição registrada e recursos observados atualmente contêm ${fmt(rn)} recursos, dos quais ${fmt(rc)} (${pct(rc,rn)}) têm PRODUTO informado além de INDEFINIDO. Isso não comprova a tag do próprio RG nem quando ocorreu a classificação. As falhas são confrontadas somente com recursos observados.`;
+};
+
+/* ================= MELHORIAS DE ACOMPANHAMENTO ================= */
+let snapshotCache=[], governanceConfig={officialMap:[],actions:[]};
+const norm=v=>String(v||'').trim().toUpperCase();
+function openPage(name){const b=$('tabs').querySelector(`[data-p="${name}"]`);if(b)b.click()}
+function downloadText(name,text,type='text/csv;charset=utf-8'){
+ const blob=new Blob(['\uFEFF'+text],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function csvCell(v){const s=String(v??'');return /[;"\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+function simpleCSV(text){
+ text=text.replace(/^\uFEFF/,'');const first=text.split(/\r?\n/)[0]||'',delim=(first.match(/;/g)||[]).length>(first.match(/,/g)||[]).length?';':',';
+ const rows=[];let row=[],cell='',quoted=false;for(let i=0;i<text.length;i++){const c=text[i];if(c==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++}else quoted=!quoted}else if(c===delim&&!quoted){row.push(cell);cell=''}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cell);if(row.some(x=>x.trim()))rows.push(row);row=[];cell=''}else cell+=c}row.push(cell);if(row.some(x=>x.trim()))rows.push(row);
+ if(rows.length<2)throw Error('Arquivo vazio.');const headers=rows.shift().map(norm);return rows.map(r=>Object.fromEntries(headers.map((h,i)=>[h,String(r[i]||'').trim()])));
+}
+async function saveConfig(){
+ const response=await fetch('/api/tags/governance-config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(governanceConfig)});if(!response.ok)throw Error('Não foi possível persistir a configuração.');governanceConfig=await response.json();renderOfficialMap();renderActions();
+}
+async function loadGovernanceConfig(){
+ try{const response=await fetch('/api/tags/governance-config');if(response.ok)governanceConfig=await response.json()}catch(_){}renderOfficialMap();renderActions();
+}
+function renderOfficialMap(){
+ const rows=governanceConfig.officialMap||[];$('officialMapState').textContent=rows.length?`${fmt(rows.length)} Centros de Custo carregados · atualizado ${governanceConfig.updatedAt?new Date(governanceConfig.updatedAt).toLocaleString('pt-BR'):''}`:'Nenhum mapa oficial carregado.';
+ $('officialMapTable').innerHTML=rows.length?`<thead><tr><th>CC</th><th>BU oficial</th><th>CCOWNER oficial</th></tr></thead><tbody>${rows.slice(0,20).map(x=>`<tr><td class="m">${esc(x.CC)}</td><td>${esc(x.BU)}</td><td>${esc(x.CCOWNER||'—')}</td></tr>`).join('')}</tbody>`:'';
+}
+$('uploadOfficialMap').addEventListener('click',async()=>{try{const f=$('officialMapFile').files[0];if(!f)throw Error('Selecione o CSV do mapa oficial.');const rows=simpleCSV(await f.text()),keys=Object.keys(rows[0]||{});if(!keys.includes('CC')||!keys.includes('BU'))throw Error('O arquivo precisa conter CC e BU.');const seen=new Map();for(const r of rows){const x={CC:norm(r.CC),BU:norm(r.BU),CCOWNER:norm(r.CCOWNER)};if(!x.CC||!x.BU)continue;if(seen.has(x.CC)&&seen.get(x.CC).BU!==x.BU)throw Error('CC '+x.CC+' possui mais de uma BU no mapa.');seen.set(x.CC,x)}governanceConfig.officialMap=[...seen.values()];await saveConfig();$('officialMapState').textContent=`Mapa oficial gravado: ${fmt(seen.size)} CCs.`;render()}catch(e){$('officialMapState').textContent='Não atualizado: '+e.message}});
+
+function renderActions(){
+ const base=[{date:'—',action:'Saneamento PRODUTO',scope:'830 RGs',processed:830,success:819,failure:11,responsible:'Histórico importado',evidence:'RGs_Sem_Tag_PRODUTO'},{date:'—',action:'PAGAMENTOS → BANCOS',scope:'Ondas 2 e 3',processed:D.wu.uniq,success:D.wu.existe,failure:0,responsible:'Histórico importado',evidence:`${D.overlap} reprocessados`}];
+ const rows=[...(governanceConfig.actions||[])].sort((a,b)=>String(b.date).localeCompare(String(a.date))).concat(base);
+ $('actionsTable').innerHTML=`<thead><tr><th>Data</th><th>Ação</th><th>Escopo</th><th class="r">Processados</th><th class="r">Sucessos</th><th class="r">Falhas</th><th>Responsável</th><th>Evidência</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${x.date==='—'?'—':esc(x.date.split('-').reverse().join('/'))}</td><td><b>${esc(x.action)}</b></td><td>${esc(x.scope)}</td><td class="r">${fmt(x.processed||0)}</td><td class="r">${fmt(x.success||0)}</td><td class="r">${fmt(x.failure||0)}</td><td>${esc(x.responsible||'—')}</td><td>${esc(x.evidence||'—')}</td></tr>`).join('')}</tbody>`;
+}
+$('saveAction').addEventListener('click',async()=>{try{const action={id:crypto.randomUUID?crypto.randomUUID():Date.now().toString(36),date:$('actionDate').value,action:$('actionName').value.trim(),scope:$('actionScope').value.trim(),processed:+$('actionProcessed').value||0,success:+$('actionSuccess').value||0,failure:+$('actionFailure').value||0,responsible:$('actionOwner').value.trim(),evidence:$('actionEvidence').value.trim()};if(!action.date||!action.action)throw Error('Informe a data e a ação.');governanceConfig.actions=[...(governanceConfig.actions||[]),action];await saveConfig();$('actionForm').querySelectorAll('input').forEach(i=>i.value='')}catch(e){alert(e.message)}});
+
+function renderComparisonAndTrend(){
+ const ordered=[...snapshotCache].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.savedAt||'').localeCompare(String(b.savedAt||''))),cur=ordered.at(-1),prev=ordered.at(-2);
+ const g=cur?.summary?.governance||{},pg=prev?.summary?.governance||{};const delta=(v,p,suffix='')=>{if(!prev)return 'Sem fotografia anterior';const d=(v||0)-(p||0),cls=d>0?'up':d<0?'down':'neutral';return `<span class="delta ${cls}">${d>0?'+':''}${fmt(d)}${suffix}</span> vs. anterior`};
+ const metric=(tag,x)=>x?.tags?.[tag]?.total?100*x.tags[tag].classified/x.tags[tag].total:0;
+ $('comparisonCards').innerHTML=[['Recursos',fmt(g.resources||0),delta(g.resources,pg.resources)],['Resource Groups',fmt(g.resourceGroups||0),delta(g.resourceGroups,pg.resourceGroups)],['CLIENTE informado',metricPct(g.tags?.CLIENTE?.classified||0,g.tags?.CLIENTE?.total||0),prev?delta(Math.round(metric('CLIENTE',g)*10),Math.round(metric('CLIENTE',pg)*10),' p.p.').replace(/([+-]?\d+)/,m=>(+m/10).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})):'Sem fotografia anterior'],['PRODUTO informado',metricPct(g.tags?.PRODUTO?.classified||0,g.tags?.PRODUTO?.total||0),prev?delta(Math.round(metric('PRODUTO',g)*10),Math.round(metric('PRODUTO',pg)*10),' p.p.').replace(/([+-]?\d+)/,m=>(+m/10).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})):'Sem fotografia anterior']].map(x=>`<div class="panel kpi c3"><div class="eyebrow">${x[0]}</div><div class="v">${x[1]}</div><div class="d">${x[2]}</div></div>`).join('');
+ const tag=$('trendTag').value,pts=ordered.map(s=>{const x=s.summary?.governance?.tags?.[tag];return {label:s.date?s.date.split('-').reverse().join('/'):'Baseline',value:x?.total?100*x.filled/x.total:null}}).filter(x=>x.value!=null);
+ if(!pts.length){$('tagTrend').innerHTML='<p class="muted">Ainda não há dados históricos para esta Tag.</p>';return}const W=900,Ht=170,pad=32,min=Math.max(0,Math.min(...pts.map(x=>x.value))-3),max=Math.min(100,Math.max(...pts.map(x=>x.value))+3),range=max-min||1,xy=pts.map((x,i)=>({x:pad+(pts.length===1?(W-2*pad)/2:i*(W-2*pad)/(pts.length-1)),y:Ht-pad-(x.value-min)*(Ht-2*pad)/range,...x}));
+ $('tagTrend').innerHTML=`<svg viewBox="0 0 ${W} ${Ht}" role="img" aria-label="Evolução de ${tag}"><line class="trend-grid" x1="${pad}" y1="${Ht-pad}" x2="${W-pad}" y2="${Ht-pad}"/><polyline class="trend-line" points="${xy.map(p=>p.x+','+p.y).join(' ')}"/>${xy.map(p=>`<circle class="trend-dot" cx="${p.x}" cy="${p.y}" r="5"><title>${p.label}: ${p.value.toFixed(1)}%</title></circle><text class="trend-label" x="${p.x}" y="${Math.max(12,p.y-10)}" text-anchor="middle">${p.value.toFixed(1).replace('.',',')}%</text><text class="trend-label" x="${p.x}" y="${Ht-8}" text-anchor="middle">${p.label}</text>`).join('')}</svg>`;
+}
+$('trendTag').addEventListener('change',renderComparisonAndTrend);
+
+const enhancedEvo=renderEvo;renderEvo=function(){enhancedEvo();renderComparisonAndTrend();renderActions()};
+window.ownerBreakdowns=window.ownerBreakdowns||new Map();
+const enhancedFin=renderFin;renderFin=function(){
+ enhancedFin();
+ const map=new Map((governanceConfig.officialMap||[]).map(x=>[norm(x.CC),x]));if(!map.size)return;
+ const table=$('buccTbl'),head=table.tHead.rows[0];
+ head.insertAdjacentHTML('beforeend','<th>BU oficial</th><th>CCOWNER atual</th><th>CCOWNER oficial</th><th>Conformidade / ação</th>');
+ let currentBU='';
+ for(const tr of table.tBodies[0].rows){
+  if(tr.classList.contains('grp')){currentBU=norm(tr.cells[0].textContent);tr.insertAdjacentHTML('beforeend','<td></td><td></td><td></td><td></td>');continue}
+  const cc=norm(tr.cells[1]?.textContent),off=map.get(cc),owners=new Map();
+  for(const i of idxs())if(norm(val('BU',i))===currentBU&&norm(val('CC',i))===cc){const owner=norm(val('CCOWNER',i))||'(VAZIO)';owners.set(owner,(owners.get(owner)||0)+1)}
+  const ownerList=[...owners].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'pt-BR')),ownerKey=currentBU+'\u0001'+cc;window.ownerBreakdowns.set(ownerKey,{bu:currentBU,cc,items:ownerList,total:ownerList.reduce((sum,x)=>sum+x[1],0)});const buOk=!!off&&norm(off.BU)===currentBU,ownerOk=!off?.CCOWNER||(owners.size===1&&owners.has(norm(off.CCOWNER)));
+  let status='<span class="pill ok">Conforme</span>';
+  if(!off)status=`<button class="official-drill" data-official-drill="unmapped" data-cc="${esc(cc)}" data-bu-current="${esc(currentBU)}"><span class="pill n">CC sem mapeamento</span><span>Ver itens</span></button>`;
+  else if(!buOk||!ownerOk){const labels=[!buOk?'BU divergente':'',!ownerOk?'CCOWNER divergente':''].filter(Boolean).join(' + ');status=`<button class="official-drill" data-official-drill="row" data-cc="${esc(cc)}" data-bu-current="${esc(currentBU)}" data-bu-official="${esc(norm(off.BU))}" data-owner-official="${esc(norm(off.CCOWNER))}"><span class="pill ${!buOk?'bad':'warn'}">${labels}</span><span>Ver itens</span></button>`}
+  const ownerCell=ownerList.length?`<button type="button" class="owner-count ${ownerOk?'is-conform':''}" data-owner-breakdown="${esc(ownerKey)}"><strong>${fmt(ownerList.length)}</strong> ${ownerList.length===1?'responsável':'responsáveis'}<span>Ver lista →</span></button>`:'—';
+  tr.insertAdjacentHTML('beforeend',`<td><b>${esc(off?.BU||'—')}</b></td><td>${ownerCell}</td><td>${esc(off?.CCOWNER||'—')}</td><td>${status}</td>`)
+ }
+ const mapped=idxs().filter(i=>map.has(norm(val('CC',i)))),conform=mapped.filter(i=>norm(map.get(norm(val('CC',i))).BU)===norm(val('BU',i)));
+ const card=$('finKpis').children[2];card.querySelector('.v').textContent=pct(conform.length,mapped.length);card.querySelector('.d').textContent=`${fmt(conform.length)} de ${fmt(mapped.length)} recursos com CC mapeado`;
+};
+
+$('buccTbl').addEventListener('click',e=>{const button=e.target.closest('[data-owner-breakdown]');if(!button)return;const data=window.ownerBreakdowns.get(button.dataset.ownerBreakdown);if(!data)return;$('ownerBreakdownTitle').textContent=`${data.items.length} ${data.items.length===1?'responsável':'responsáveis'} encontrados`;$('ownerBreakdownSubtitle').textContent=`BU ${data.bu} · CC ${data.cc} · ${fmt(data.total)} recursos`;$('ownerBreakdownBody').innerHTML=`<div class="owner-list">${data.items.map(([name,total])=>`<div class="owner-list-row"><span>${esc(name)}</span><strong>${fmt(total)} <small>${total===1?'recurso':'recursos'}</small></strong></div>`).join('')}</div>`;$('ownerBreakdownDialog').showModal()});
+
+function filteredDetailIndexes(){const q=$('detQ').value.trim().toLowerCase(),pend=$('detPend').checked;let ix=idxs();if(pend)ix=ix.filter(isPend);if(q)ix=ix.filter(i=>R.n[i].toLowerCase().includes(q)||D.rgs[R.g[i]][0].toLowerCase().includes(q)||D.subs[R.s[i]].name.toLowerCase().includes(q));return ix}
+$('exportPending').addEventListener('click',()=>{const ix=filteredDetailIndexes(),headers=['ResourceId','Subscription','ResourceGroup','ResourceName','ResourceType',...TAGS],lines=[headers.join(';')];for(const i of ix)lines.push([R.id[i],D.subs[R.s[i]].name,D.rgs[R.g[i]][0],R.n[i],DI.type[R.t[i]],...TAGS.map(t=>val(t,i)||'')].map(csvCell).join(';'));downloadText(`Pendencias_Tags_${D.meta?.date||'sem_data'}.csv`,lines.join('\r\n'));});
+$('granTbl').addEventListener('click',e=>{if(!e.target.closest('[data-open-pending]'))return;$('detPend').checked=true;selSub=null;selRg=null;openPage('det')});
+const pendingExec=renderExec;renderExec=function(){pendingExec();$('granTbl').querySelectorAll('tbody tr').forEach(tr=>{const td=tr.cells[2];td.innerHTML=`<button class="link-btn" data-open-pending>${td.textContent}</button>`})};
+
+async function deleteStoredSnapshot(id,label){if(!confirm(`Excluir a fotografia ${label}?\n\nO baseline não será afetado. Esta ação não pode ser desfeita.`))return;const response=await fetch('/api/tags/snapshots/'+encodeURIComponent(id),{method:'DELETE'});let result={};try{result=await response.json()}catch(_){}if(!response.ok)throw Error(result.error||'Falha ao excluir.');await loadSnapshotHistory();}
+const enhancedHistoryRows=historyRows;historyRows=function(snapshots){snapshotCache=snapshots;enhancedHistoryRows(snapshots);const rows=$('snapshotHistory').tBodies[0].rows,ordered=[...snapshots].sort((a,b)=>String(b.savedAt||'').localeCompare(String(a.savedAt||'')));ordered.forEach((s,i)=>{const td=rows[i]?.insertCell();if(td)td.innerHTML=s.baseline?'<span class="muted">Protegido</span>':`<button class="action-btn danger" data-delete-snapshot="${esc(s.id)}" data-label="${esc(s.date||s.id)}">Excluir</button>`});renderComparisonAndTrend()};
+$('snapshotHistory').addEventListener('click',async e=>{const b=e.target.closest('[data-delete-snapshot]');if(!b)return;try{await deleteStoredSnapshot(b.dataset.deleteSnapshot,b.dataset.label)}catch(error){alert(error.message)}});
+
+loadGovernanceConfig();
+render();syncEvidence();
+
+</script>
+<script src="/tags/assets/dashboard-v2.js?v=20261019-01"></script>
+<link rel="stylesheet" href="/tags/assets/padrao-plataforma.css">
+<script src="/plataforma/modulos.js"></script>
+<script src="/plataforma/modulos-tags-vms.js"></script>
+</body></html>

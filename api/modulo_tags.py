@@ -31,6 +31,10 @@ DATA_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 SUB_ID_RE = re.compile(r"^[0-9a-f-]{36}$")
 TAGS_RESUMO = ["AMBIENTE", "BU", "CAPEX", "CC", "CCOWNER", "CLIENTE", "PRODUTO", "FOLIO"]
 
+# A primeira fotografia pode ser importada antes dos históricos de saneamento.
+# A tela exige estas quatro coleções, portanto as normalizamos para listas vazias.
+HISTORICO_VAZIO = {"prod": [], "w1": [], "w2": [], "w3": []}
+
 # Fotografia vazia: a tela abre (sem numeros) ate a 1a carga de dados.
 SNAPSHOT_VAZIO = {
     "meta": {"date": "", "fullFile": "", "scopeFile": "", "eligibilityApplied": True},
@@ -294,13 +298,24 @@ def _json_seguro(valor):
     return json.dumps(valor, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
 
 
+def _historico_para_tela(pasta):
+    """Garante o contrato do front-end mesmo sem histórico inicial no App Service."""
+    try:
+        bruto = _ler_json_gz(pasta / "historico.json.gz")
+    except (FileNotFoundError, OSError, json.JSONDecodeError):
+        bruto = {}
+    if not isinstance(bruto, dict):
+        bruto = {}
+    return {
+        chave: list(bruto.get(chave) or []) if isinstance(bruto.get(chave), list) else []
+        for chave in HISTORICO_VAZIO
+    }
+
+
 def pagina(pasta):
     html = (MODULO_DIR / "index.html").read_text("utf-8")
     base = baseline(pasta)
-    try:
-        historico = _ler_json_gz(pasta / "historico.json.gz")
-    except FileNotFoundError:
-        historico = {}
+    historico = _historico_para_tela(pasta)
     html = html.replace("__TAGS_SNAPSHOT__", _json_seguro(fotografia_atual(pasta, base)), 1)
     return html.replace("__TAGS_HISTORICO__", _json_seguro(historico), 1)
 

@@ -62,20 +62,31 @@ jobs:
           echo "hostname=$hostname" >> "$GITHUB_OUTPUT"
           echo "App Service: $hostname"
 
+      - name: Configurar runtime Python e startup do FastAPI
+        run: |
+          az webapp config appsettings set \
+            -g "${{ vars.TF_RESOURCE_GROUP }}" -n "${{ vars.TF_APP_NAME }}" \
+            --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true
+          az webapp config set \
+            -g "${{ vars.TF_RESOURCE_GROUP }}" -n "${{ vars.TF_APP_NAME }}" \
+            --startup-file 'python -m uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8000}'
+
       - name: Deploy (zip)
         run: |
           az webapp deploy \
             -g "${{ vars.TF_RESOURCE_GROUP }}" -n "${{ vars.TF_APP_NAME }}" \
             --src-path "$RUNNER_TEMP/dash.zip" --type zip --timeout 1200000 \
-            --track-status false
+            --clean true --track-status false
 
-      - name: Verificar que o app responde
+      - name: Verificar aplicacao FastAPI
         run: |
           for i in $(seq 1 20); do
             sleep 30
-            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 "https://${{ steps.webapp.outputs.hostname }}/" || true)
-            echo "tentativa $i: HTTP $code"
-            # 200, redirecionamento ou 401 comprovam que o App Service respondeu.
-            case "$code" in 200|301|302|401) exit 0;; esac
+            body=$(curl -fsSL --max-time 60 "https://${{ steps.webapp.outputs.hostname }}/" || true)
+            if printf '%s' "$body" | grep -qi 'FinOps'; then
+              echo "FastAPI respondeu corretamente na tentativa $i"
+              exit 0
+            fi
+            echo "tentativa $i: aplicacao ainda indisponivel"
           done
-          echo "app nao respondeu como esperado"; exit 1
+          echo "O App Service nao iniciou a aplicacao FastAPI"; exit 1

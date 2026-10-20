@@ -210,6 +210,13 @@
   document.body.classList.add('scope-v2');
   const headerRow=document.querySelector('.top .hrow');
   if(headerRow){
+    // Mantém a assinatura visual consolidada do dashboard original também na plataforma Python.
+    headerRow.insertAdjacentHTML('afterbegin',`<div class="partner-brand" aria-label="Solo Network e Evertec">
+      <a class="partner-logo-slot solo-slot" href="https://solonetwork.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Abrir site da Solo Network"><img id="soloThemeLogo" src="/tags/assets/solo-white.png" alt="Solo Network"></a>
+      <span class="partner-amp" aria-hidden="true">&amp;</span>
+      <a class="partner-logo-slot evertec-slot" href="https://evertecinc.com/pt-br/" target="_blank" rel="noopener noreferrer" aria-label="Abrir site da Evertec"><img id="evertecThemeLogo" src="/tags/assets/evertec-white.png" alt="Evertec"></a>
+    </div>`);
+    const legacyLogo=headerRow.querySelector('.brand-logo');if(legacyLogo)legacyLogo.hidden=true;
     const meta=headerRow.querySelector('.meta');
     if(meta){
       const tools=document.createElement('div');tools.className='header-tools';tools.setAttribute('aria-label','Controles de visualização');
@@ -218,9 +225,11 @@
     }
   }
 
-  const themeBtn=$('themeBtn'),fontBtn=$('fontBtn');
+  const themeBtn=$('themeBtn'),fontBtn=$('fontBtn'),soloLogo=$('soloThemeLogo'),evertecLogo=$('evertecThemeLogo');
   function applyTheme(theme){
     const dark=theme==='dark';document.body.classList.toggle('dark-theme',dark);
+    if(soloLogo)soloLogo.src='/tags/assets/solo-white.png';
+    if(evertecLogo)evertecLogo.src='/tags/assets/evertec-white.png';
     themeBtn.textContent=dark?'DARK':'LIGHT';themeBtn.title=`Tema ${dark?'escuro':'claro'} ativo; clique para alternar`;themeBtn.setAttribute('aria-pressed',String(dark));
     try{localStorage.setItem('governanca-theme',dark?'dark':'light')}catch(_){ }
   }
@@ -494,10 +503,17 @@
   renderEvo=renderAdvanced;$('advancedAdd').addEventListener('click',()=>{advancedPreset=null;advancedRules.push({field:'AMBIENTE',op:'eq',value:'PRD'});renderAdvanced()});$('advancedClear').addEventListener('click',()=>{advancedPreset=null;advancedRules=[];$('advancedSearch').value='';renderAdvanced()});$('advancedRules').addEventListener('input',e=>{const row=e.target.closest('[data-rule]');if(!row||e.target.dataset.key!=='value')return;advancedPreset=null;advancedRules[+row.dataset.rule].value=e.target.value;renderAdvanced(true)});$('advancedRules').addEventListener('change',e=>{const row=e.target.closest('[data-rule]');if(!row)return;advancedPreset=null;advancedRules[+row.dataset.rule][e.target.dataset.key]=e.target.value;renderAdvanced()});$('advancedRules').addEventListener('click',e=>{const b=e.target.closest('[data-remove-rule]');if(!b)return;advancedPreset=null;advancedRules.splice(+b.dataset.removeRule,1);renderAdvanced()});$('advancedLogic').addEventListener('change',()=>renderAdvanced());$('advancedLevel').addEventListener('change',()=>renderAdvanced(true));let advancedTimer;$('advancedSearch').addEventListener('input',()=>{clearTimeout(advancedTimer);advancedTimer=setTimeout(()=>renderAdvanced(true),150)});$('advancedExport').addEventListener('click',()=>{const ix=advancedIndexes(),map=new Map((governanceConfig.officialMap||[]).map(x=>[norm(x.CC),x])),headers=['ResourceId','Subscription','ResourceGroup','ResourceName','ResourceType',...TAGS,'BU_OFICIAL','CCOWNER_OFICIAL','STATUS_MAPA_OFICIAL'],lines=[headers.map(csvCell).join(';'),...ix.map(i=>{const off=map.get(norm(val('CC',i))),buBad=!!off&&norm(val('BU',i))!==norm(off.BU),ownerBad=!!off&&!!off.CCOWNER&&norm(val('CCOWNER',i))!==norm(off.CCOWNER),status=!off?'CC SEM MAPEAMENTO':buBad&&ownerBad?'BU E CCOWNER DIVERGENTES':buBad?'BU DIVERGENTE':ownerBad?'CCOWNER DIVERGENTE':'CONFORME';return [R.id[i],D.subs[R.s[i]].name,D.rgs[R.g[i]][0],R.n[i],DI.type[R.t[i]],...TAGS.map(t=>val(t,i)||''),off?.BU||'',off?.CCOWNER||'',status].map(csvCell).join(';')})];downloadText(`Analise_Avancada_${D.meta?.date||'sem_data'}.csv`,lines.join('\r\n'))});
 
   function parseSubscriptions(rows){
+    // Aceita o cadastro corporativo atual e variações PT/EN comuns em exportações.
     const get=(r,...keys)=>{for(const key of keys)if(r[key]!=null)return r[key];return ''};
     const clean=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toUpperCase();
-    const parsed=rows.map(r=>({name:get(r,'SUBSCRIPTION NAME','SUBSCRIPTION','NAME').trim(),id:get(r,'SUBSCRIPTION ID','SUBSCRIPTIONID','ID').trim().toLowerCase(),managementGroup:get(r,'PARENT MANAGEMENT GROUP','MANAGEMENT GROUP').trim(),status:get(r,'STATUS','STATE').trim(),inScope:clean(get(r,'MANAGEMENT GROUP (MG-EVERTECBRASIL)?','NO ESCOPO?','IN SCOPE?'))==='SIM'})).filter(x=>x.name&&/^[0-9a-f-]{36}$/.test(x.id));
-    if(!parsed.length)throw Error('O cadastro de subscriptions não contém linhas válidas.');return parsed;
+    const parsed=rows.map(r=>({
+      name:get(r,'SUBSCRIPTION NAME','SUBSCRIPTION','NAME','NOME DA ASSINATURA','NOME ASSINATURA','ASSINATURA').trim(),
+      id:get(r,'SUBSCRIPTION ID','SUBSCRIPTIONID','ID','ID DA ASSINATURA','ID ASSINATURA').trim().toLowerCase(),
+      managementGroup:get(r,'PARENT MANAGEMENT GROUP','MANAGEMENT GROUP','GRUPO DE GERENCIAMENTO PAI','GRUPO DE GERENCIAMENTO').trim(),
+      status:get(r,'STATUS','STATE','ESTADO','SITUACAO','SITUAÇÃO').trim(),
+      inScope:clean(get(r,'MANAGEMENT GROUP (MG-EVERTECBRASIL)?','NO ESCOPO?','IN SCOPE?','ESCOPO','ESCOPO GOVERNANCA','ESCOPO GOVERNANÇA'))==='SIM'
+    })).filter(x=>x.name&&/^[0-9a-f-]{36}$/.test(x.id));
+    if(!parsed.length)throw Error('O cadastro de subscriptions não contém linhas válidas. Confira Nome e ID da Assinatura.');return parsed;
   }
   const box=$('p-pbi').querySelector('.import-box'),fields=box.querySelector('.import-fields'),labels=fields.querySelectorAll('label');
   box.querySelector('.sub').textContent='Carregue o CSV de recursos elegíveis da Governança. O cadastro corporativo de subscriptions é um arquivo mestre e só precisa ser reenviado quando houver alteração.';

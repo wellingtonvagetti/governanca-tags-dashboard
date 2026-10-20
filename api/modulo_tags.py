@@ -233,10 +233,15 @@ def excluir_fotografia(pasta, ident):
 
 
 def _subscriptions_padrao(pasta):
-    try:
-        return json.loads((pasta / "subscriptions-master.json").read_text("utf-8"))
-    except Exception:
-        return []
+    """Lê o cadastro corporativo persistido e, no primeiro acesso, o cadastro do deploy."""
+    for arquivo in (pasta / "subscriptions-master.json", BASE_DIR / "subscriptions-master.json"):
+        try:
+            dados = json.loads(arquivo.read_text("utf-8"))
+            if isinstance(dados, list):
+                return dados
+        except (FileNotFoundError, OSError, json.JSONDecodeError):
+            continue
+    return []
 
 
 def ler_configuracao(pasta):

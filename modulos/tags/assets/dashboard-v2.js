@@ -210,13 +210,6 @@
   document.body.classList.add('scope-v2');
   const headerRow=document.querySelector('.top .hrow');
   if(headerRow){
-    // Mantém a assinatura visual consolidada do dashboard original também na plataforma Python.
-    headerRow.insertAdjacentHTML('afterbegin',`<div class="partner-brand" aria-label="Solo Network e Evertec">
-      <a class="partner-logo-slot solo-slot" href="https://solonetwork.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Abrir site da Solo Network"><img id="soloThemeLogo" src="/tags/assets/solo-white.png" alt="Solo Network"></a>
-      <span class="partner-amp" aria-hidden="true">&amp;</span>
-      <a class="partner-logo-slot evertec-slot" href="https://evertecinc.com/pt-br/" target="_blank" rel="noopener noreferrer" aria-label="Abrir site da Evertec"><img id="evertecThemeLogo" src="/tags/assets/evertec-white.png" alt="Evertec"></a>
-    </div>`);
-    const legacyLogo=headerRow.querySelector('.brand-logo');if(legacyLogo)legacyLogo.hidden=true;
     const meta=headerRow.querySelector('.meta');
     if(meta){
       const tools=document.createElement('div');tools.className='header-tools';tools.setAttribute('aria-label','Controles de visualização');
@@ -225,11 +218,9 @@
     }
   }
 
-  const themeBtn=$('themeBtn'),fontBtn=$('fontBtn'),soloLogo=$('soloThemeLogo'),evertecLogo=$('evertecThemeLogo');
+  const themeBtn=$('themeBtn'),fontBtn=$('fontBtn');
   function applyTheme(theme){
     const dark=theme==='dark';document.body.classList.toggle('dark-theme',dark);
-    if(soloLogo)soloLogo.src='/tags/assets/solo-white.png';
-    if(evertecLogo)evertecLogo.src='/tags/assets/evertec-white.png';
     themeBtn.textContent=dark?'DARK':'LIGHT';themeBtn.title=`Tema ${dark?'escuro':'claro'} ativo; clique para alternar`;themeBtn.setAttribute('aria-pressed',String(dark));
     try{localStorage.setItem('governanca-theme',dark?'dark':'light')}catch(_){ }
   }

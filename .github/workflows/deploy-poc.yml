@@ -52,16 +52,30 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Resolver hostname real do App Service
+        id: webapp
+        run: |
+          hostname=$(az webapp show \
+            -g "${{ vars.TF_RESOURCE_GROUP }}" -n "${{ vars.TF_APP_NAME }}" \
+            --query defaultHostName -o tsv)
+          test -n "$hostname"
+          echo "hostname=$hostname" >> "$GITHUB_OUTPUT"
+          echo "App Service: $hostname"
+
       - name: Deploy (zip)
         run: |
           az webapp deploy \
             -g "${{ vars.TF_RESOURCE_GROUP }}" -n "${{ vars.TF_APP_NAME }}" \
-            --src-path "$RUNNER_TEMP/dash.zip" --type zip --timeout 1200000
+            --src-path "$RUNNER_TEMP/dash.zip" --type zip --timeout 1200000 \
+            --track-status false
 
       - name: Verificar que o app responde
         run: |
-          sleep 30
-          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 "https://${{ vars.TF_APP_NAME }}.azurewebsites.net/")
-          echo "HTTP $code"
-          # com login (Easy Auth) o app responde 200, 302 ou 401: qualquer um indica que subiu
-          case "$code" in 200|301|302|401) exit 0;; *) echo "app nao respondeu como esperado"; exit 1;; esac
+          for i in $(seq 1 20); do
+            sleep 30
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 "https://${{ steps.webapp.outputs.hostname }}/" || true)
+            echo "tentativa $i: HTTP $code"
+            # 200, redirecionamento ou 401 comprovam que o App Service respondeu.
+            case "$code" in 200|301|302|401) exit 0;; esac
+          done
+          echo "app nao respondeu como esperado"; exit 1

@@ -1,5 +1,5 @@
 output "app_url" {
-  value = "https://${local.hostname}"
+  value = "https://${azurerm_linux_web_app.this.default_hostname}"
 }
 
 output "resource_group" {
@@ -8,7 +8,7 @@ output "resource_group" {
 
 output "redirect_uri_a_cadastrar" {
   description = "Adicionar em Authentication > Redirect URIs da App Registration existente."
-  value       = "https://${local.hostname}/.auth/login/aad/callback"
+  value       = "https://${azurerm_linux_web_app.this.default_hostname}/.auth/login/aad/callback"
 }
 
 output "sql_server_fqdn" {

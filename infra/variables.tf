@@ -14,7 +14,7 @@ variable "resource_group_name" {
 }
 
 variable "app_name" {
-  description = "Nome do Web App (vira <app_name>.azurewebsites.net, precisa ser unico)."
+  description = "Nome lógico do Web App. O hostname padrão real é retornado pelo Azure e pode conter hash/região."
   type        = string
 }
 

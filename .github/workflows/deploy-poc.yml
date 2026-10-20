@@ -66,7 +66,7 @@ jobs:
         run: |
           az webapp config appsettings set \
             -g "${{ vars.TF_RESOURCE_GROUP }}" -n "${{ vars.TF_APP_NAME }}" \
-            --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true
+            --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true WEBSITES_ENABLE_APP_SERVICE_STORAGE=true
           az webapp config set \
             -g "${{ vars.TF_RESOURCE_GROUP }}" -n "${{ vars.TF_APP_NAME }}" \
             --startup-file 'python -m uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8000}'

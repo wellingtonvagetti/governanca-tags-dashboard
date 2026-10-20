@@ -91,3 +91,18 @@ body.font-changing main,body.font-changing header,body.font-changing footer{anim
 @media(max-width:1100px){.global-filter-bar{grid-template-columns:repeat(3,minmax(0,1fr))}.global-filter-title,.global-search{grid-column:span 2}}
 @media(max-width:900px){.subscription-filters{grid-template-columns:repeat(2,minmax(0,1fr));max-width:none;width:100%}.advanced-rule{grid-template-columns:58px 1fr}.advanced-rule select,.advanced-rule input{grid-column:2}.advanced-rule .action-btn{grid-column:1;grid-row:2}.advanced-top{grid-template-columns:1fr}.official-quality-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.subscription-filters,.global-filter-bar,.official-quality-grid{grid-template-columns:1fr}.global-filter-title,.global-search{grid-column:span 1}.advanced-actions{width:100%}.advanced-actions .action-btn{flex:1}.advanced-rule{grid-template-columns:1fr}.advanced-rule>*{grid-column:1!important}.rule-join{justify-content:flex-start;padding-inline:10px}.advanced-context{align-items:flex-start;flex-direction:column}}
+
+
+/* Paridade visual do dashboard original dentro da plataforma FinOps. */
+.scope-v2 nav.tabs button{
+  text-transform:uppercase !important;
+  font-family:var(--f-body) !important;
+  font-weight:700 !important;
+  letter-spacing:.035em !important;
+}
+.scope-v2 .brand h1{font:700 20px/1.15 var(--f-disp);letter-spacing:.005em}
+.scope-v2 .brand-logo[hidden]{display:none!important}
+@media(min-width:1024px){
+  .scope-v2 .top .hrow{min-height:54px}
+  .scope-v2 .partner-brand{margin-right:6px}
+}

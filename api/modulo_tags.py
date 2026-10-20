@@ -233,8 +233,11 @@ def excluir_fotografia(pasta, ident):
 
 
 def _subscriptions_padrao(pasta):
-    """Lê o cadastro corporativo persistido e, no primeiro acesso, o cadastro do deploy."""
-    for arquivo in (pasta / "subscriptions-master.json", BASE_DIR / "subscriptions-master.json"):
+    """Lê o cadastro persistido; no App Service usa o mestre do pacote no primeiro acesso."""
+    arquivos = [pasta / "subscriptions-master.json"]
+    if os.getenv("WEBSITE_SITE_NAME"):
+        arquivos.append(BASE_DIR / "subscriptions-master.json")
+    for arquivo in arquivos:
         try:
             dados = json.loads(arquivo.read_text("utf-8"))
             if isinstance(dados, list):

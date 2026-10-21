@@ -82,7 +82,8 @@
     ['microsoft.botservice/botservices','bot-service.svg'],['microsoft.communication/communicationservices','communication-services.svg'],['microsoft.communication/emailservices','communication-services.svg'],['microsoft.communication/emailservices/domains','communication-services.svg'],
     ['microsoft.documentdb/databaseaccounts','cosmos-db.svg'],['microsoft.documentdb/mongoclusters','cosmos-db.svg'],['microsoft.datafactory/factories','data-factory.svg'],['microsoft.datashare/accounts','data-share.svg'],
     ['microsoft.dbformysql/flexibleservers','mysql.svg'],['microsoft.datamigration/services','database-migration.svg'],['microsoft.datamigration/services/projects','database-migration.svg'],['microsoft.databricks/accessconnectors','databricks.svg'],['microsoft.databricks/workspaces','databricks.svg'],
-    ['microsoft.visualstudio/account','azure-devops.svg'],['github.network/networksettings','azure-devops.svg'],['microsoft.fileshares/fileshares','file-share.svg'],['microsoft.machinelearningservices/workspaces','machine-learning.svg'],['microsoft.cognitiveservices/accounts/projects','machine-learning.svg'],
+    ['microsoft.visualstudio/account','azure-devops.svg'],['github.network/networksettings','azure-devops.svg'],['microsoft.fileshares/fileshares','file-share.svg'],['microsoft.machinelearningservices/workspaces','machine-learning.svg'],['microsoft.cognitiveservices/accounts','machine-learning.svg'],['microsoft.cognitiveservices/accounts/projects','machine-learning.svg'],
+    ['microsoft.awsconnector/ec2accountattributes','azure-arc.svg'],['microsoft.awsconnector/ec2addresses','public-ip.svg'],['microsoft.awsconnector/ec2flowlogs','network-watcher.svg'],['microsoft.awsconnector/ec2images','image.svg'],['microsoft.awsconnector/ec2instancestatuses','virtual-machine.svg'],['microsoft.awsconnector/ec2ipams','virtual-network.svg'],['microsoft.awsconnector/ec2keypairs','ssh-key.svg'],['microsoft.awsconnector/ec2networkacls','network-security-group.svg'],['microsoft.awsconnector/ec2networkinterfaces','network-interface.svg'],['microsoft.awsconnector/ec2routetables','route-table.svg'],['microsoft.awsconnector/ec2securitygroups','network-security-group.svg'],['microsoft.awsconnector/ec2subnets','virtual-network.svg'],['microsoft.awsconnector/ec2volumes','disk.svg'],['microsoft.awsconnector/ec2vpcendpoints','private-endpoint.svg'],['microsoft.awsconnector/ec2vpcpeeringconnections','connection.svg'],['microsoft.awsconnector/ec2vpcs','virtual-network.svg'],
     ['microsoft.insights/workbooks','workbook.svg'],['microsoft.compute/capacityreservationgroups','capacity-reservation.svg'],['microsoft.compute/capacityreservationgroups/capacityreservations','capacity-reservation.svg'],['microsoft.compute/galleries/images/versions','compute-gallery.svg'],
     ['microsoft.cdn/profiles','cdn.svg'],['microsoft.cdn/profiles/endpoints','cdn.svg'],['microsoft.confluent/organizations','event-hub.svg'],['microsoft.app/jobs','container-app.svg'],['microsoft.app/managedenvironments','container-environment.svg'],
     ['microsoft.desktopvirtualization/applicationgroups','avd-application-group.svg'],['microsoft.desktopvirtualization/hostpools','avd-host-pool.svg'],['microsoft.desktopvirtualization/workspaces','virtual-desktop.svg'],
@@ -98,7 +99,7 @@
   ];
   const resourceIcon=type=>iconBase+(iconMap.find(([key])=>String(type||'').toLowerCase()===key)?.[1]||'all-resources.svg');
   const resourceTypeLabels={
-    'microsoft.azurearcdata/sqlserverinstances':'Azure Arc-enabled SQL Server','microsoft.hybridcompute/machines':'Azure Arc-enabled Server','microsoft.hybridconnectivity/publiccloudconnectors':'Azure Arc Multicloud Connector',
+    'microsoft.azurearcdata/sqlserverinstances':'Azure Arc-enabled SQL Server','microsoft.hybridcompute/machines':'Azure Arc-enabled Server','microsoft.hybridconnectivity/publiccloudconnectors':'Azure Arc Multicloud Connector','microsoft.cognitiveservices/accounts':'Cognitive Services Account',
     'microsoft.compute/restorepointcollections':'Restore Point Collection','microsoft.storage/storageaccounts':'Storage Account',
     'microsoft.insights/datacollectionrules':'Data Collection Rule','microsoft.operationalinsights/workspaces':'Log Analytics Workspace',
     'microsoft.operationsmanagement/solutions':'Operations Management Solution','microsoft.compute/disks':'Managed Disk',
@@ -523,6 +524,8 @@
     document.title='Auditoria de Tags de VMs — Evertec';
     $('moduleBrandTitle').textContent='FinOps · Auditoria de Tags de VMs';
     $('scopeSeg').hidden=true;
+    $('globalType').closest('label')?.setAttribute('hidden','');
+    globalFilters.type='';
     document.querySelector('.evidence-strip').hidden=true;
     $('tabs').querySelectorAll('button:not([data-p="vm"])').forEach(button=>button.remove());
   }

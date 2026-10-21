@@ -17,7 +17,6 @@
         elemento.removeAttribute('aria-disabled');
         elemento.classList.remove('disabled', 'off');
         elemento.style.setProperty('opacity', '1', 'important');
-        elemento.style.setProperty('color', '#fff', 'important');
         elemento.style.setProperty('cursor', 'pointer', 'important');
       });
       const walker = document.createTreeWalker(alvo, NodeFilter.SHOW_TEXT);

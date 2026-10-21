@@ -71,6 +71,7 @@
     ['microsoft.resourcegraph/queries','resource-graph.svg'],
     ['microsoft.portal/dashboards','dashboard.svg'],
     ['microsoft.hybridcompute/machines','arc-machine.svg'],
+    ['microsoft.hybridconnectivity/publiccloudconnectors','azure-arc.svg'],
     ['microsoft.hybridcompute/machines/extensions','azure-arc.svg'],
     ['microsoft.azurearcdata/sqlserverinstances','azure-arc.svg'],
     ['microsoft.azurearcdata/sqlserverinstances/databases','azure-arc.svg'],
@@ -97,7 +98,7 @@
   ];
   const resourceIcon=type=>iconBase+(iconMap.find(([key])=>String(type||'').toLowerCase()===key)?.[1]||'all-resources.svg');
   const resourceTypeLabels={
-    'microsoft.azurearcdata/sqlserverinstances':'Azure Arc-enabled SQL Server','microsoft.hybridcompute/machines':'Azure Arc-enabled Server',
+    'microsoft.azurearcdata/sqlserverinstances':'Azure Arc-enabled SQL Server','microsoft.hybridcompute/machines':'Azure Arc-enabled Server','microsoft.hybridconnectivity/publiccloudconnectors':'Azure Arc Multicloud Connector',
     'microsoft.compute/restorepointcollections':'Restore Point Collection','microsoft.storage/storageaccounts':'Storage Account',
     'microsoft.insights/datacollectionrules':'Data Collection Rule','microsoft.operationalinsights/workspaces':'Log Analytics Workspace',
     'microsoft.operationsmanagement/solutions':'Operations Management Solution','microsoft.compute/disks':'Managed Disk',

@@ -31,8 +31,8 @@ DATA_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 SUB_ID_RE = re.compile(r"^[0-9a-f-]{36}$")
 TAGS_RESUMO = ["AMBIENTE", "BU", "CAPEX", "CC", "CCOWNER", "CLIENTE", "PRODUTO", "FOLIO"]
 
-# A primeira fotografia pode ser importada antes dos históricos de saneamento.
-# A tela exige estas quatro coleções, portanto as normalizamos para listas vazias.
+# A primeira fotografia pode ser importada antes dos historicos de saneamento.
+# A tela exige estas quatro colecoes, portanto as normalizamos para listas vazias.
 HISTORICO_VAZIO = {"prod": [], "w1": [], "w2": [], "w3": []}
 
 # Fotografia vazia: a tela abre (sem numeros) ate a 1a carga de dados.
@@ -233,18 +233,10 @@ def excluir_fotografia(pasta, ident):
 
 
 def _subscriptions_padrao(pasta):
-    """Lê o cadastro persistido; no App Service usa o mestre do pacote no primeiro acesso."""
-    arquivos = [pasta / "subscriptions-master.json"]
-    if os.getenv("WEBSITE_SITE_NAME"):
-        arquivos.append(BASE_DIR / "subscriptions-master.json")
-    for arquivo in arquivos:
-        try:
-            dados = json.loads(arquivo.read_text("utf-8"))
-            if isinstance(dados, list):
-                return dados
-        except (FileNotFoundError, OSError, json.JSONDecodeError):
-            continue
-    return []
+    try:
+        return json.loads((pasta / "subscriptions-master.json").read_text("utf-8"))
+    except Exception:
+        return []
 
 
 def ler_configuracao(pasta):
@@ -307,17 +299,14 @@ def _json_seguro(valor):
 
 
 def _historico_para_tela(pasta):
-    """Garante o contrato do front-end mesmo sem histórico inicial no App Service."""
+    """Garante o contrato do front-end mesmo sem historico inicial no App Service."""
     try:
         bruto = _ler_json_gz(pasta / "historico.json.gz")
     except (FileNotFoundError, OSError, json.JSONDecodeError):
         bruto = {}
     if not isinstance(bruto, dict):
         bruto = {}
-    return {
-        chave: list(bruto.get(chave) or []) if isinstance(bruto.get(chave), list) else []
-        for chave in HISTORICO_VAZIO
-    }
+    return {chave: list(bruto[chave]) if isinstance(bruto.get(chave), list) else [] for chave in HISTORICO_VAZIO}
 
 
 def pagina(pasta):
@@ -338,4 +327,4 @@ def pagina_auditoria_vms(pasta):
         '<body class="v2-loading">',
         '<body class="v2-loading" data-module="auditoria-vms">',
         1,
-    )
+    ).replace('data-mod-seletor="tags"', 'data-mod-seletor="auditoria-vms"', 1)

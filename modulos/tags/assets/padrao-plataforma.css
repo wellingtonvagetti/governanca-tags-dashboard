@@ -45,3 +45,7 @@ html:root body .global-filter-title span{font-size:calc(13px * var(--ui-scale,1)
 html:root body .global-filter-bar label{font:400 calc(11px * var(--ui-scale,1)) var(--pf-mono);letter-spacing:1px;gap:6px}
 html:root body .global-filter-bar :is(select,input){font-size:calc(14px * var(--ui-scale,1));padding:9px 10px;min-height:40px}
 html:root body .global-filter-bar .action-btn{min-height:40px;padding-inline:16px}
+
+/* fundo Evertec da plataforma (escuro e claro bem suave), igual ao modulo Recomendacoes */
+html:root body.dark-theme:not(.v2-loading):before{background:linear-gradient(rgba(8,9,13,.30),rgba(8,9,13,.45)),url('/plataforma/fundo-evertec-escuro.svg') center/cover no-repeat}
+html:root body:not(.dark-theme):not(.v2-loading):before{content:"";position:fixed;inset:0;background:url('/plataforma/fundo-evertec-claro.svg') center/cover no-repeat;pointer-events:none;z-index:-1}

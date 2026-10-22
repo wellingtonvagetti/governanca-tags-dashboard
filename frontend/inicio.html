@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Plataforma FinOps Evertec</title>
+<title>Dashboard FinOps Evertec</title>
 <link rel="icon" type="image/png" href="/plataforma/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,8 +22,8 @@ body{margin:0;background:#F3F5F7;color:var(--cv-text);font-family:var(--cv-sans)
 .brand-title{font-size:18px;font-weight:600;color:#fff}
 main{max-width:1360px;margin:0 auto;padding:28px 32px 24px}
 .eyebrow{font-family:var(--cv-mono);font-size:11px;letter-spacing:1px;color:var(--cv-muted)}
-h1{font-size:28px;font-weight:600;margin:6px 0}
-.sub{color:var(--cv-muted);font-size:15px;margin:0 0 26px;max-width:760px;line-height:1.5}
+h1{font-size:28px;font-weight:700;margin:6px 0}
+.sub{color:var(--cv-muted);font-size:14px;margin:0 0 26px;max-width:760px;line-height:1.5}
 .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .card{background:#fff;border-radius:12px;padding:22px 24px;border-top:4px solid var(--cv-orange);display:flex;flex-direction:column}
 .card.navy{border-top-color:var(--cv-navy)}
@@ -33,9 +33,9 @@ h1{font-size:28px;font-weight:600;margin:6px 0}
 .chip.ok{background:#E6F4EC;color:#1F7A4D}
 .chip.fut{background:#EEF1F4;color:var(--cv-muted)}
 .ico{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;margin:18px 0 14px}
-.card h2{font-size:19px;font-weight:600;margin:0 0 8px}
-.card p{color:var(--cv-muted);line-height:1.55;margin:0 0 20px;flex:1}
-.btn{display:flex;justify-content:center;align-items:center;gap:8px;padding:11px;border-radius:8px;background:var(--cv-navy);color:#fff;font-weight:500;text-decoration:none}
+.card h2{font-size:18px;font-weight:700;margin:0 0 8px}
+.card p{color:var(--cv-muted);font-size:13px;line-height:1.55;margin:0 0 20px;flex:1}
+.btn{display:flex;justify-content:center;align-items:center;gap:8px;padding:11px;border-radius:8px;background:var(--cv-navy);color:#fff;font-size:13px;font-weight:600;text-decoration:none}
 .btn:hover{background:#13283F}
 .btn:focus-visible{outline:2px solid var(--cv-orange);outline-offset:2px}
 .btn.off{background:#fff;border:1px solid var(--cv-line);color:var(--cv-muted);cursor:default}
@@ -51,14 +51,13 @@ footer img{height:20px;display:block}
 </head>
 <body>
 <header class="topbar"><div class="topbar-inner">
-  <div class="brand"><img src="/plataforma/evertec.png" alt="Evertec"><div class="brand-mark"></div><span class="brand-title">Plataforma FinOps</span></div>
+  <div class="brand"><img src="/plataforma/evertec.png" alt="Evertec"><div class="brand-mark"></div><span class="brand-title">Dashboard FinOps</span></div>
   <div data-mod-seletor="inicio"></div>
 </div></header>
 
 <main>
-  <div class="eyebrow">PLATAFORMA FINOPS EVERTEC</div>
-  <h1>Uma plataforma, módulos especializados</h1>
-  <p class="sub">Gestão, otimização e governança de custos em nuvem. Cada módulo mantém seus próprios indicadores, escopo e data de atualização.</p>
+  <h1>Escolha um módulo</h1>
+  <p class="sub">Gestão, otimização e governança de custos em nuvem da Evertec.</p>
 
   <div class="cards">
     <section class="card">
@@ -89,10 +88,13 @@ footer img{height:20px;display:block}
 
 <footer><div class="linha">
   <div class="l"><span>Desenvolvido por</span><img src="/plataforma/solo.png" alt="Solo Network"><span>para Evertec · Uso interno</span></div>
-  <span>Plataforma FinOps Evertec</span>
+  <span>Dashboard FinOps Evertec</span>
 </div></footer>
 
-<script src="/plataforma/modulos.js"></script>
-<script src="/plataforma/modulos-tags-vms.js?v=20261021-01"></script>
+<script src="/plataforma/modulos.js?v=20261022-3"></script>
+<script>
+/* responsavel de squad entra direto no modulo de Recomendacoes (os demais modulos sao do FinOps) */
+fetch('/api/acesso/eu',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(p=>{if(p&&p.papel==='squad')location.replace('/recomendacoes');}).catch(()=>{});
+</script>
 </body>
 </html>

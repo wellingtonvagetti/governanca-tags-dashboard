@@ -202,13 +202,13 @@ pre.code{background:var(--surface-2);border:1px solid var(--line);border-radius:
 <section class="page" id="p-exec">
   <div class="grid" id="kpis"></div>
   <div class="grid">
-    <div class="panel c8">
+    <div class="panel c12">
       <h2>Preenchimento × Classificação por Tag</h2>
       <p class="sub">Base: recursos do universo selecionado. INDEFINIDO conta como preenchido tecnicamente, mas aparece separado porque ainda não é uma classificação.</p>
       <div class="legend"><span><i style="background:var(--ok)"></i>Informado</span><span><i style="background:var(--warn)"></i>Preenchido = INDEFINIDO</span><span><i style="background:var(--bad)"></i>Vazio / inexistente</span></div>
       <div id="stackTags"></div>
     </div>
-    <div class="panel c4">
+    <div class="panel c4" hidden aria-hidden="true">
       <h2>Azure Policy</h2>
       <p class="sub">Valores informados a partir do portal. Não há export de compliance anexado.</p>
       <div class="policy" id="policy"></div>
@@ -240,7 +240,7 @@ pre.code{background:var(--surface-2);border:1px solid var(--line);border-radius:
   <div class="tagsel" id="tagSel"></div>
   <div class="grid" id="tagKpis"></div>
   <div class="grid">
-    <div class="panel c7">
+    <div class="panel c12">
       <h2 id="tagDistTitle">Distribuição dos valores</h2>
       <p class="sub" id="tagDistSub"></p>
       <div class="ctrls" id="ownerCtrl" hidden>
@@ -248,7 +248,7 @@ pre.code{background:var(--surface-2);border:1px solid var(--line);border-radius:
       </div>
       <div class="scroll" id="tagDist"></div>
     </div>
-    <div class="panel c5">
+    <div class="panel c5" hidden aria-hidden="true">
       <h2>Qualidade do valor</h2>
       <p class="sub">Variações de caixa normalizadas para contagem (ex.: prd → PRD). O valor original segue no detalhamento.</p>
       <div id="tagVariants"></div>
@@ -1028,9 +1028,10 @@ function renderOfficialMap(){
 $('uploadOfficialMap').addEventListener('click',async()=>{try{const f=$('officialMapFile').files[0];if(!f)throw Error('Selecione o CSV do mapa oficial.');const rows=simpleCSV(await f.text()),keys=Object.keys(rows[0]||{});if(!keys.includes('CC')||!keys.includes('BU'))throw Error('O arquivo precisa conter CC e BU.');const seen=new Map();for(const r of rows){const x={CC:norm(r.CC),BU:norm(r.BU),CCOWNER:norm(r.CCOWNER)};if(!x.CC||!x.BU)continue;if(seen.has(x.CC)&&seen.get(x.CC).BU!==x.BU)throw Error('CC '+x.CC+' possui mais de uma BU no mapa.');seen.set(x.CC,x)}governanceConfig.officialMap=[...seen.values()];await saveConfig();$('officialMapState').textContent=`Mapa oficial gravado: ${fmt(seen.size)} CCs.`;render()}catch(e){$('officialMapState').textContent='Não atualizado: '+e.message}});
 
 function renderActions(){
+ const table=$('actionsTable');if(!table)return;
  const base=[{date:'—',action:'Saneamento PRODUTO',scope:'830 RGs',processed:830,success:819,failure:11,responsible:'Histórico importado',evidence:'RGs_Sem_Tag_PRODUTO'},{date:'—',action:'PAGAMENTOS → BANCOS',scope:'Ondas 2 e 3',processed:D.wu.uniq,success:D.wu.existe,failure:0,responsible:'Histórico importado',evidence:`${D.overlap} reprocessados`}];
  const rows=[...(governanceConfig.actions||[])].sort((a,b)=>String(b.date).localeCompare(String(a.date))).concat(base);
- $('actionsTable').innerHTML=`<thead><tr><th>Data</th><th>Ação</th><th>Escopo</th><th class="r">Processados</th><th class="r">Sucessos</th><th class="r">Falhas</th><th>Responsável</th><th>Evidência</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${x.date==='—'?'—':esc(x.date.split('-').reverse().join('/'))}</td><td><b>${esc(x.action)}</b></td><td>${esc(x.scope)}</td><td class="r">${fmt(x.processed||0)}</td><td class="r">${fmt(x.success||0)}</td><td class="r">${fmt(x.failure||0)}</td><td>${esc(x.responsible||'—')}</td><td>${esc(x.evidence||'—')}</td></tr>`).join('')}</tbody>`;
+ table.innerHTML=`<thead><tr><th>Data</th><th>Ação</th><th>Escopo</th><th class="r">Processados</th><th class="r">Sucessos</th><th class="r">Falhas</th><th>Responsável</th><th>Evidência</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${x.date==='—'?'—':esc(x.date.split('-').reverse().join('/'))}</td><td><b>${esc(x.action)}</b></td><td>${esc(x.scope)}</td><td class="r">${fmt(x.processed||0)}</td><td class="r">${fmt(x.success||0)}</td><td class="r">${fmt(x.failure||0)}</td><td>${esc(x.responsible||'—')}</td><td>${esc(x.evidence||'—')}</td></tr>`).join('')}</tbody>`;
 }
 $('saveAction').addEventListener('click',async()=>{try{const action={id:crypto.randomUUID?crypto.randomUUID():Date.now().toString(36),date:$('actionDate').value,action:$('actionName').value.trim(),scope:$('actionScope').value.trim(),processed:+$('actionProcessed').value||0,success:+$('actionSuccess').value||0,failure:+$('actionFailure').value||0,responsible:$('actionOwner').value.trim(),evidence:$('actionEvidence').value.trim()};if(!action.date||!action.action)throw Error('Informe a data e a ação.');governanceConfig.actions=[...(governanceConfig.actions||[]),action];await saveConfig();$('actionForm').querySelectorAll('input').forEach(i=>i.value='')}catch(e){alert(e.message)}});
 
@@ -1085,6 +1086,5 @@ render();syncEvidence();
 </script>
 <script src="/tags/assets/dashboard-v2.js?v=20261020-04"></script>
 <link rel="stylesheet" href="/tags/assets/padrao-plataforma.css">
-<script src="/plataforma/modulos.js"></script>
-<script src="/plataforma/modulos-tags-vms.js"></script>
+<script src="/plataforma/modulos.js?v=20261022-3"></script>
 </body></html>

@@ -1,7 +1,18 @@
 # Histórico de versões do frontend
 
+## Virada de mês genérica (outubro/2026)
+
+- Seletor de competência com **"+ Abrir {Mês}/{Ano}"**, liberado 3 dias antes do mês seguinte. Ao abrir, a API herda as pendências do mês anterior (`reconciliar-pendencias`) e o dash já abre no mês novo, com Rescaldo herdado, histórico e importação prontos. Vale para todos os meses (Novembro, Dezembro, ...), não só Outubro.
+- A **data recomendada** é a da primeira vez que a recomendação apareceu e **não muda mais na herança** (antes virava `<mês>-01`). `tools/restaurar_data_recomendada.py SIMULAR|APLICAR <competência>` devolve a data original às linhas já herdadas (Outubro: 1068 linhas; o financeiro não muda).
+- `GET /api/recomendacoes/{competencia}/historico`: última versão de cada ID em todas as competências anteriores. De Novembro em diante é a referência da importação (capturada/reprovada antes não volta; IDs novos continuam a sequência) e do Rescaldo herdado.
+- Importar "Novas recomendações" grava no mês ativo do banco (Outubro, Novembro, ...).
+- Ao recarregar a página, abre o último mês aberto pelo usuário ou o mais recente do banco; o mês ativo deixou de ser compartilhado entre usuários (`finops_active_period` fora do `app_state`).
+- Correção: o "Rescaldo herdado de Agosto" em Setembro voltou a aparecer (R$ 3.864,34); zerava desde a troca dos nomes de status.
+- `tools/fechar_competencia.py SIMULAR|APLICAR <competência>` fecha uma competência no SQLite ou no Azure SQL e confere que os números não mudam; `verifica_numeros.py` aceita `AZURE` no lugar do arquivo do banco.
+
 ## Plataforma de módulos (outubro/2026)
 
+- Recomendações com o topo no padrão dos módulos de Tags e Auditoria de VMs: logo | título, botões LIGHT (tema escuro) e FONTE (normal/grande/extra grande), módulo, competência, linha e abas em caixa alta. Tema e fonte usam as mesmas preferências do módulo de Tags (`governanca-theme`/`governanca-font`). O tema escuro é gerado do próprio CSS por `tools/gerar_tema_escuro.py` (rodar de novo quando o CSS mudar cores).
 - Página inicial (`/`, `frontend/inicio.html`) com os módulos; o dash de recomendações passa para `/recomendacoes`. Seletor "Módulo" no topo de cada página (`frontend/plataforma/`), no mesmo visual do seletor de competência.
 - Módulo Governança de Tags (`/tags`): front-end do dashboard de tags em `modulos/tags/` e o servidor Node portado para `api/modulo_tags.py` (fotografias, histórico e configuração, mesmas regras e validações). Os dados (inventário Azure) ficam fora do repositório, em `FINOPS_TAGS_DATA_DIR` (no App Service, `/home/data/modulos/tags`); `tools/tags_carregar_base.py` grava a base inicial.
 

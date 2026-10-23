@@ -5,8 +5,8 @@
   var MODULOS = [
     { id: 'inicio', nome: 'Início', url: '/' },
     { id: 'rec', nome: 'Recomendações FinOps', url: '/recomendacoes' },
-    { id: 'tags', nome: 'Governança de Tags', url: '/tags' },
-    { id: 'auditoria-vms', nome: 'Auditoria de Tags de VMs', url: '/auditoria-vms' }
+    { id: 'tags', nome: 'Governança de Tags', url: '/tags', desde: '2026-10' },
+    { id: 'auditoria-vms', nome: 'Auditoria de Tags de VMs', url: '/auditoria-vms', desde: '2026-10' }
   ];
   window.PLATAFORMA_MODULOS = MODULOS;
 
@@ -16,13 +16,31 @@
     });
   }
 
+  // Modulo com "desde" so aparece a partir dessa competencia; a pagina que tem competencia (Recomendacoes) informa a sua
+  // por window.plataformaCompetencia('AAAA-MM'). Sem competencia informada, aparecem todos.
+  var COMPETENCIA = window.COMPETENCIA_PLATAFORMA_V5 || '';
+  function visiveis(atual) {
+    return MODULOS.filter(function (m) { return m.id === atual || !m.desde || !COMPETENCIA || COMPETENCIA >= m.desde; });
+  }
+  function itensHtml(atual) {
+    return visiveis(atual).map(function (m) {
+      if (m.emBreve) return '<span>' + esc(m.nome) + '<small>EM BREVE</small></span>';
+      return '<a href="' + m.url + '"' + (m.id === atual ? ' aria-current="page"' : '') + '>' + esc(m.nome) + '</a>';
+    }).join('');
+  }
+  window.plataformaCompetencia = function (comp) {
+    COMPETENCIA = /^\d{4}-\d{2}$/.test(comp || '') ? comp : '';
+    Array.prototype.forEach.call(document.querySelectorAll('[data-mod-seletor] .mod-list-v5'), function (nav) {
+      var alvo = nav.closest('[data-mod-seletor]');
+      var sel = MODULOS.filter(function (m) { return m.id === alvo.getAttribute('data-mod-seletor'); })[0] || MODULOS[0];
+      nav.innerHTML = itensHtml(sel.id);
+    });
+  };
+
   function montar(alvo) {
     var atual = alvo.getAttribute('data-mod-seletor');
     var sel = MODULOS.filter(function (m) { return m.id === atual; })[0] || MODULOS[0];
-    var itens = MODULOS.map(function (m) {
-      if (m.emBreve) return '<span>' + esc(m.nome) + '<small>EM BREVE</small></span>';
-      return '<a href="' + m.url + '"' + (m.id === sel.id ? ' aria-current="page"' : '') + '>' + esc(m.nome) + '</a>';
-    }).join('');
+    var itens = itensHtml(sel.id);
     alvo.classList.add('mod-v5');
     alvo.innerHTML = '<span class="mod-label-v5">MÓDULO</span>' +
       '<details class="mod-dd-v5"><summary aria-label="Módulo">' + esc(sel.nome) +

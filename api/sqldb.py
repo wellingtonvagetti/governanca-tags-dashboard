@@ -31,16 +31,30 @@ _RE_ESCREVE_RECS = re.compile(
 )
 _RECS_LOCK = threading.Lock()
 _RECS_VERSAO = 0
+# Versao por competencia: gravar em Outubro nao invalida o cache de Setembro. A competencia vem dos parametros da
+# escrita (texto AAAA-MM); escrita sem competencia reconhecivel sobe _RECS_TODAS e invalida todas.
+_RE_COMPETENCIA = re.compile(r"^\d{4}-\d{2}$")
+_RECS_TODAS = 0
+_RECS_POR_COMP = {}
 
 
 def versao_recomendacoes():
     return _RECS_VERSAO
 
 
-def _subir_versao_recomendacoes():
-    global _RECS_VERSAO
+def versao_competencia(competencia):
+    return (_RECS_TODAS, _RECS_POR_COMP.get(competencia, 0))
+
+
+def _subir_versao_recomendacoes(competencias=None):
+    global _RECS_VERSAO, _RECS_TODAS
     with _RECS_LOCK:
         _RECS_VERSAO += 1
+        if competencias:
+            for c in competencias:
+                _RECS_POR_COMP[c] = _RECS_POR_COMP.get(c, 0) + 1
+        else:
+            _RECS_TODAS += 1
 
 
 # --------------------------------------------------------------------------
@@ -145,18 +159,31 @@ class AzConnection:
     def __init__(self, raw):
         self._raw = raw
         self._escreveu_recs = False
+        self._comps = set()
+        self._todas = False
 
-    def _marcar(self, sql):
+    def _marcar(self, sql, params=None):
         if _RE_ESCREVE_RECS.match(sql):
             self._escreveu_recs = True
+            achou = {p for p in (params or ()) if isinstance(p, str) and _RE_COMPETENCIA.match(p)}
+            if achou:
+                self._comps |= achou
+            else:
+                self._todas = True
+
+    def _limpar_marcas(self):
+        self._escreveu_recs = False
+        self._comps = set()
+        self._todas = False
 
     def _confirmar_versao(self):
         if self._escreveu_recs:
-            self._escreveu_recs = False
-            _subir_versao_recomendacoes()
+            comps = None if self._todas else set(self._comps)
+            self._limpar_marcas()
+            _subir_versao_recomendacoes(comps)
 
     def execute(self, sql, params=None):
-        self._marcar(sql)
+        self._marcar(sql, params)
         com_params = params is not None and len(params) > 0
         t = traduzir_sql(sql, com_params)
         cur = self._raw.cursor()
@@ -165,8 +192,9 @@ class AzConnection:
         return AzCursor(cur)
 
     def executemany(self, sql, seq):
-        self._marcar(sql)
         seq = [tuple(p) for p in seq]
+        for p in seq or [()]:
+            self._marcar(sql, p)
         t = traduzir_sql(sql, True)
         cur = self._raw.cursor()
         if t is not None and seq:
@@ -179,7 +207,7 @@ class AzConnection:
 
     def rollback(self):
         self._raw.rollback()
-        self._escreveu_recs = False
+        self._limpar_marcas()
 
     def close(self):
         try:
@@ -197,7 +225,7 @@ class AzConnection:
                 self._confirmar_versao()
             else:
                 self._raw.rollback()
-                self._escreveu_recs = False
+                self._limpar_marcas()
         finally:
             self.close()
         return False

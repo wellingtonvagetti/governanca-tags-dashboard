@@ -152,5 +152,66 @@ class CacheListagem(unittest.TestCase):
         self.assertEqual(dados, [{"id": 2}])
 
 
+class VersaoPorCompetencia(unittest.TestCase):
+    def test_escrita_de_outubro_nao_invalida_setembro(self):
+        set_antes, out_antes = sqldb.versao_competencia("2026-09"), sqldb.versao_competencia("2026-10")
+        _versao_apos("UPDATE recommendations SET analise = ? WHERE competencia = ? AND opportunity_id = ?",
+                     params=("Capturado", "2026-10", "FINOPS-1"))
+        self.assertEqual(sqldb.versao_competencia("2026-09"), set_antes)
+        self.assertNotEqual(sqldb.versao_competencia("2026-10"), out_antes)
+
+    def test_escrita_sem_competencia_invalida_todas(self):
+        antes = sqldb.versao_competencia("2026-09")
+        _versao_apos("UPDATE recommendations SET saving = ?", params=(1,))
+        self.assertNotEqual(sqldb.versao_competencia("2026-09"), antes)
+
+    def test_data_completa_nao_e_competencia(self):
+        antes = sqldb.versao_competencia("2026-09")
+        _versao_apos("UPDATE recommendations SET data_prevista = ? WHERE opportunity_id = ?", params=("2026-10-15", "X"))
+        self.assertNotEqual(sqldb.versao_competencia("2026-09"), antes)  # sem AAAA-MM: invalida todas (seguro)
+
+
+class AtualizacaoParcial(unittest.TestCase):
+    def setUp(self):
+        self._orig = (db.listar_recomendacoes_db, db.buscar_recomendacao)
+        self.leituras = 0
+
+        def listar(competencia, **k):
+            self.leituras += 1
+            return [{"finOpsOpportunityId": "A", "savingEst": 10, "analise": "x"},
+                    {"finOpsOpportunityId": "B", "savingEst": 5, "analise": "x"}]
+
+        db.listar_recomendacoes_db = listar
+        db.buscar_recomendacao = lambda c, oid: {"finOpsOpportunityId": oid, "savingEst": 5, "analise": "Capturado"}
+        db._RECS_CACHE.clear()
+
+    def tearDown(self):
+        db.listar_recomendacoes_db, db.buscar_recomendacao = self._orig
+        db._RECS_CACHE.clear()
+
+    def gravar_b(self):
+        _versao_apos("UPDATE recommendations SET analise = ? WHERE competencia = ? AND opportunity_id = ?",
+                     params=("Capturado", "2027-01", "B"))
+
+    def test_troca_so_a_linha_gravada_sem_reler(self):
+        db.listar_recomendacoes_cache("2027-01")
+        antes = sqldb.versao_competencia("2027-01")
+        self.gravar_b()
+        self.assertTrue(db.atualizar_cache_linhas("2027-01", ["B"], antes))
+        dados, veio = db.listar_recomendacoes_cache("2027-01")
+        self.assertTrue(veio)
+        self.assertEqual(self.leituras, 1)
+        self.assertEqual([d["analise"] for d in dados], ["x", "Capturado"])
+
+    def test_outra_escrita_no_meio_rele_tudo(self):
+        db.listar_recomendacoes_cache("2027-01")
+        antes = sqldb.versao_competencia("2027-01")
+        self.gravar_b()
+        self.gravar_b()
+        self.assertFalse(db.atualizar_cache_linhas("2027-01", ["B"], antes))
+        db.listar_recomendacoes_cache("2027-01")
+        self.assertEqual(self.leituras, 2)
+
+
 if __name__ == "__main__":
     unittest.main()

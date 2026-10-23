@@ -3,16 +3,29 @@
 # Uso:
 #   python tools\verifica_numeros.py GERAR     database\finops_dev.db 2026-09   (grava docs\golden_numeros.json)
 #   python tools\verifica_numeros.py VERIFICAR database\finops_dev.db 2026-09   (compara com o golden; codigo de saida 1 se divergir)
-import sys, os, json, sqlite3, hashlib
+import sys, os, json, sqlite3, hashlib, decimal
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from api.status import legado  # status novos e antigos contam como a mesma classe (so o nome mudou)
 
 REF = {"2026-09": {"saving_efetivo": 143944.70, "rescaldo_previsto": 44842.05}}  # numeros fechados informados
 GOLDEN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "golden_numeros.json")
 
+def num(x):
+    # Azure SQL devolve Decimal e bit (bool); normaliza para o mesmo formato do SQLite
+    if isinstance(x, bool):
+        return int(x)
+    if isinstance(x, decimal.Decimal):
+        return float(x)
+    return x
+
 def medir(db, comp):
-    c = sqlite3.connect("file:%s?mode=ro" % db.replace("\\", "/"), uri=True)
-    q = lambda sql, *a: c.execute(sql, a).fetchone()[0]
+    azure = db.upper() == "AZURE"
+    if azure:
+        from api.db import conectar
+        c = conectar()
+    else:
+        c = sqlite3.connect("file:%s?mode=ro" % db.replace("\\", "/"), uri=True)
+    q = lambda sql, *a: num(c.execute(sql, a).fetchone()[0])
     m = {
         "competencia": comp,
         "linhas": q("SELECT COUNT(*) FROM recommendations WHERE competencia=?", comp),
@@ -26,20 +39,21 @@ def medir(db, comp):
     h = hashlib.sha256()
     for r in c.execute("SELECT opportunity_id, realizado, saving_est, saving, saving_efetivo, rescaldo_previsto, COALESCE(data_efetivada,''), COALESCE(analise,'') "
                        "FROM recommendations WHERE competencia=? ORDER BY opportunity_id", (comp,)):
-        r = r[:-1] + (legado(r[-1]),)
+        r = tuple(num(x) for x in r[:-1]) + (legado(r[-1]),)
         h.update(("|".join(str(round(x, 2)) if isinstance(x, float) else str(x) for x in r) + "\n").encode("utf-8"))
     m["hash_linhas"] = h.hexdigest()
     try:
         m["fechada"] = q("SELECT COALESCE(MAX(fechada),0) FROM competencias_fechadas WHERE competencia=?", comp)
-        m["triggers_fechamento"] = q("SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name LIKE 'trg_fechamento%'")
-    except sqlite3.Error:
+        m["triggers_fechamento"] = q("SELECT COUNT(*) FROM sys.triggers WHERE name LIKE 'trg_fechamento%'" if azure else
+                                     "SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name LIKE 'trg_fechamento%'")
+    except Exception:
         m["fechada"] = None; m["triggers_fechamento"] = None
     c.close()
     return m
 
 def main():
     modo, db, comp = sys.argv[1].upper(), sys.argv[2], sys.argv[3]
-    if not os.path.exists(db):
+    if db.upper() != "AZURE" and not os.path.exists(db):
         print("ERRO: banco nao encontrado: " + db); sys.exit(2)
     m = medir(db, comp)
     for k, v in m.items():
@@ -61,7 +75,8 @@ def main():
     g = json.load(open(GOLDEN, encoding="utf-8")).get(comp)
     if not g:
         print("ERRO: sem golden para " + comp); sys.exit(2)
-    dif = [k for k in g if g[k] != m.get(k)]
+    # SQLite e Azure tem quantidades diferentes de triggers de fechamento (o Azure tambem bloqueia INSERT)
+    dif = [k for k in g if g[k] != m.get(k) and not (k == "triggers_fechamento" and db.upper() == "AZURE")]
     if dif:
         print("DIVERGE em: " + ", ".join(dif))
         for k in dif: print("   %s: golden=%s atual=%s" % (k, g[k], m.get(k)))

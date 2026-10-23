@@ -45,6 +45,10 @@ from api.cost_service import (
 )
 
 from api import status as _status
+from api import resposta_cache as _resposta_cache
+from api.sqldb import versao_competencia as _versao_comp_v5
+from api.db import atualizar_cache_linhas as _atualizar_cache_linhas_v5
+from api import acesso as _acesso
 from api import modulo_tags as _modulo_tags
 from api import modulo_tags_rotas as _modulo_tags_rotas
 from api import modulo_auditoria_vms_rotas as _modulo_auditoria_vms_rotas
@@ -96,6 +100,49 @@ async def _finops_usuario_middleware_v322(request, call_next):
         return await call_next(request)
     finally:
         USUARIO_ATUAL.reset(token)
+
+
+_ROTA_SQUAD_GRAVA_V5 = __import__("re").compile(r"^/api/recomendacoes/[^/]+/estado-completo-lote$")
+# POSTs que so leem (a tela usa POST pelo tamanho do corpo)
+_ROTAS_POST_LEITURA_V5 = ("/api/custos/produto/linhas", "/api/rdc/pdf")
+# numero do RDC: o responsavel pede so para as squads dele (filtrado no endpoint)
+_ROTA_RDC_NUMEROS_V5 = __import__("re").compile(r"^/api/rdc/[^/]+/numeros$")
+
+
+@app.middleware("http")
+async def _finops_acesso_middleware_v5(request, call_next):
+    # Perfis (api/acesso.py): admin faz tudo; squad le so as squads dele e grava so pelo lote
+    # (que restringe campos e regras); bloqueado nao usa a API. Sem FINOPS_ADMINS, todos sao admin.
+    caminho = request.url.path
+    if not caminho.startswith("/api/"):
+        return await call_next(request)
+    from starlette.concurrency import run_in_threadpool
+    perfil = await run_in_threadpool(_acesso.perfil, request, conectar)
+    # Previa (Configuracoes > Squads): o admin ve o dash como a squad, so leitura
+    previa = (request.headers.get("x-previa-squad") or "").strip()
+    if previa and perfil["papel"] == "admin":
+        from urllib.parse import unquote
+        perfil = {**perfil, "papel": "squad", "squads": [unquote(previa)], "previa": True}
+    request.state.perfil = perfil
+    if perfil.get("previa") and request.method not in ("GET", "HEAD") and caminho not in _ROTAS_POST_LEITURA_V5:
+        return Response(content='{"detail":"Prévia da squad: somente visualização."}',
+                        status_code=403, media_type="application/json")
+    if perfil["papel"] == "admin" or caminho in ("/api/acesso/eu", "/api/health"):
+        return await call_next(request)
+    if perfil["papel"] == "bloqueado":
+        return Response(content='{"detail":"Seu e-mail não está cadastrado em nenhuma squad. Fale com o FinOps."}',
+                        status_code=403, media_type="application/json")
+    if (request.method in ("GET", "HEAD") or _ROTA_SQUAD_GRAVA_V5.match(caminho) or caminho in _ROTAS_POST_LEITURA_V5
+            or _ROTA_RDC_NUMEROS_V5.match(caminho)):
+        return await call_next(request)
+    return Response(content='{"detail":"Ação disponível apenas para o time FinOps."}',
+                    status_code=403, media_type="application/json")
+
+
+@app.get("/api/acesso/eu")
+def quem_sou_eu(request: Request):
+    perfil = getattr(request.state, "perfil", None) or {"papel": "admin", "email": "", "squads": []}
+    return {**perfil, "restricao_ativa": bool(_acesso.admins())}
 
 
 def _finops_aquecer_custos_v402():
@@ -196,6 +243,13 @@ def dashboard_barra():
     return RedirectResponse("/recomendacoes", status_code=308)
 
 
+def _chave_perfil_v5(perfil):
+    # o responsavel de squad recebe so as squads dele: a resposta guardada e separada por conjunto de squads
+    if perfil.get("papel") == "squad":
+        return ("squad",) + tuple(sorted(str(s).strip().lower() for s in perfil.get("squads") or []))
+    return ("todas",)
+
+
 @app.get("/api/health")
 def health():
 
@@ -260,7 +314,12 @@ def listar_recomendacoes(
     ambiente: str | None = Query(
         default=None
     ),
+
+    request: Request = None,
 ):
+
+    # responsavel de squad so recebe as recomendacoes das squads dele
+    perfil_v5 = getattr(getattr(request, "state", None), "perfil", None) or {"papel": "admin"}
 
     sem_filtros = not any((
         q, provider, bu, squad,
@@ -286,12 +345,19 @@ def listar_recomendacoes(
                 )
             )
 
-        return {
-            "competencia": competencia,
-            "total_base": total,
-            "total_filtrado": total,
-            "recomendacoes": dados,
-        }
+        # resposta montada e comprimida uma vez por versao da lista (ver api/resposta_cache.py)
+        base = dados
+        return _resposta_cache.json_gz(
+            request,
+            ("lista", competencia, _chave_perfil_v5(perfil_v5)),
+            (_versao_comp_v5(competencia), id(base)),
+            lambda: (lambda filtrados: {
+                "competencia": competencia,
+                "total_base": total,
+                "total_filtrado": len(filtrados),
+                "recomendacoes": filtrados,
+            })(_acesso.filtrar_linhas(perfil_v5, base)),
+        )
 
     total = total_competencia(
         competencia
@@ -317,12 +383,21 @@ def listar_recomendacoes(
         ambiente=ambiente,
     )
 
+    dados = _acesso.filtrar_linhas(perfil_v5, dados)
+
     return {
         "competencia": competencia,
         "total_base": total,
         "total_filtrado": len(dados),
         "recomendacoes": dados,
     }
+
+
+@app.get("/api/email/config")
+def email_config():
+    # modo de teste (FINOPS_EMAIL_OVERRIDE_TO): a tela nao pede e-mail e avisa para onde vai
+    from api.email_service import config_publica
+    return config_publica()
 
 
 @app.post("/api/email/send")
@@ -350,6 +425,167 @@ def obter_origem_ids(
         "competencia": competencia,
         "total": len(origem),
         "origem": origem,
+    }
+
+
+@app.get("/api/historico-status/{competencia}")
+def historico_status(competencia: str, request: Request):
+    """Mudancas de status/realizado/data efetivada da competencia (auditoria), da mais nova para a mais antiga.
+
+    Usado pelo Relatorio parcial para voltar a base a posicao de uma data: desfaz o que mudou depois do corte.
+    alterado_em e UTC. Perfil squad recebe so as recomendacoes das suas squads.
+    """
+    perfil_v5 = getattr(request.state, "perfil", None) or {"papel": "admin"}
+    minhas = {s.strip().lower() for s in perfil_v5.get("squads") or []}
+    with conectar() as con:
+        rows = con.execute(
+            "SELECT a.opportunity_id, a.campo, a.valor_anterior, a.valor_novo, a.alterado_em, r.squad "
+            "FROM recommendation_audit a JOIN recommendations r "
+            "ON r.competencia = a.competencia AND r.opportunity_id = a.opportunity_id "
+            "WHERE a.competencia = ? AND a.campo IN ('analise', 'realizado', 'db:realizado', 'dataEfetivada') "
+            "ORDER BY a.alterado_em DESC, a.id DESC",
+            (competencia,)
+        ).fetchall()
+    return [
+        [str(r[0]), str(r[1]), "" if r[2] is None else str(r[2]), "" if r[3] is None else str(r[3]),
+         str(r[4])[:19].replace("T", " ")]
+        for r in rows
+        if perfil_v5["papel"] != "squad" or str(r[5] or "").strip().lower() in minhas
+    ]
+
+
+RDC_INICIO_V5 = "2026-10"
+
+
+@app.post("/api/rdc/{competencia}/numeros")
+def numerar_rdc(competencia: str, request: Request, payload: dict = Body(...)):
+    """Numero sequencial do RDC por squad na competencia (RDC-AAAA-MM-0001...).
+
+    A ordem e a da primeira reprovacao de cada squad (auditoria da coluna analise); o numero dado fica gravado
+    em app_state e nunca muda. Squad sem historico na auditoria entra depois das que tem.
+    A sequencia e unica entre competencias (como o FinOpsOpportunityId): Novembro continua depois de Outubro.
+    """
+    # o RDC nasceu em Outubro/2026: meses anteriores nao recebem numero nem contam na sequencia
+    if competencia < RDC_INICIO_V5:
+        return {}
+    squads = {str(k): [str(i) for i in (v or []) if str(i).strip()] for k, v in (payload.get("squads") or {}).items()}
+    perfil_v5 = getattr(request.state, "perfil", None) or {"papel": "admin"}
+    if perfil_v5["papel"] == "squad":
+        minhas = {s.strip().lower() for s in perfil_v5["squads"]}
+        squads = {k: v for k, v in squads.items() if k.strip().lower() in minhas}
+    chave = "rdc_numeros:%s" % competencia
+    agora = _finops_datetime_v196.now().isoformat(timespec="seconds")
+    with conectar() as con:
+        linha = con.execute("SELECT state_value FROM app_state WHERE state_key = ?", (chave,)).fetchone()
+        numeros = _finops_json_v196.loads(linha[0]) if linha else {}
+        # so o FinOps da numero (ve todas as squads e numera pela 1a reprovacao); o responsavel so le
+        novos = [] if perfil_v5["papel"] == "squad" else [s for s, ids in squads.items() if ids and s not in numeros]
+        if novos:
+            primeira = {}
+            for s in novos:
+                ids = squads[s]
+                marca = ",".join("?" for _ in ids)
+                rows = con.execute(
+                    "SELECT valor_novo, alterado_em FROM recommendation_audit "
+                    "WHERE competencia = ? AND campo = 'analise' AND opportunity_id IN (%s)" % marca,
+                    (competencia, *ids)
+                ).fetchall()
+                datas = [str(r[1]) for r in rows if str(r[0] or "").strip().lower().startswith("reprov")]
+                primeira[s] = min(datas) if datas else "9999"
+            # maior numero ja dado em qualquer competencia
+            maior = 0
+            for (chave_mes, valor) in con.execute(
+                "SELECT state_key, state_value FROM app_state WHERE state_key LIKE 'rdc_numeros:%'"
+            ).fetchall():
+                if str(chave_mes)[len("rdc_numeros:"):] >= RDC_INICIO_V5:
+                    maior = max([maior, *_finops_json_v196.loads(valor or "{}").values()])
+            proximo = maior + 1
+            for s in sorted(novos, key=lambda x: (primeira[x], x)):
+                numeros[s] = proximo
+                proximo += 1
+            _finops_upsert_sql(con, "app_state", ["state_key"], {
+                "state_key": chave,
+                "state_value": _finops_json_v196.dumps(numeros, ensure_ascii=False),
+                "updated_at": agora,
+            })
+            con.commit()
+    if perfil_v5["papel"] == "squad":
+        numeros = {k: v for k, v in numeros.items() if k.strip().lower() in minhas}
+    return {s: "RDC-%s-%04d" % (competencia, n) for s, n in numeros.items()}
+
+
+@app.post("/api/rdc/pdf")
+def gerar_rdc_pdf(payload: dict = Body(...)):
+    # RDC da squad com as reprovadas Alta/Critica ja preenchidas (o dash monta os dados).
+    from api.rdc_pdf import gerar_rdc
+    return Response(
+        content=gerar_rdc(payload),
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="RDC.pdf"'},
+    )
+
+
+@app.post("/api/relatorio-parcial/pdf")
+def gerar_relatorio_parcial_pdf(payload: dict = Body(...)):
+    # Relatorio parcial da competencia (o dash monta os numeros na posicao da data escolhida).
+    from api.relatorio_pdf import gerar_relatorio_parcial
+    return Response(
+        content=gerar_relatorio_parcial(payload),
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="Relatorio_parcial.pdf"'},
+    )
+
+
+@app.post("/api/relatorio-fechamento/pdf")
+def gerar_relatorio_fechamento_pdf(payload: dict = Body(...)):
+    # Relatorio de fechamento do mes (o dash monta os numeros da competencia fechada e do mes anterior a ela).
+    from api.relatorio_pdf import gerar_relatorio_fechamento
+    return Response(
+        content=gerar_relatorio_fechamento(payload),
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="Relatorio_fechamento.pdf"'},
+    )
+
+
+@app.get(
+    "/api/recomendacoes/{competencia}/historico"
+)
+def obter_historico_competencias_anteriores(
+    competencia: str,
+    request: Request = None,
+):
+    # Importacao de novas recomendacoes (frontend): para cada ID ja usado em
+    # competencias anteriores, a versao mais recente dele. Serve para barrar
+    # recomendacao ja capturada/reprovada e nunca repetir um FinOpsOpportunityId.
+    anteriores = sorted(
+        c for c in contar_por_competencia()
+        if c < competencia
+    )
+    perfil_v5 = getattr(getattr(request, "state", None), "perfil", None) or {"papel": "admin"}
+    if USE_AZURE_SQL:
+        listas = [_finops_listar_v404(comp) for comp in anteriores]
+        return _resposta_cache.json_gz(
+            request,
+            ("historico", competencia, _chave_perfil_v5(perfil_v5)),
+            (tuple(anteriores), tuple(_versao_comp_v5(c) for c in anteriores), tuple(id(x) for x in listas)),
+            lambda: _montar_historico_v5(competencia, anteriores, listas, perfil_v5),
+        )
+    return _montar_historico_v5(competencia, anteriores, [_finops_listar_v404(c) for c in anteriores], perfil_v5)
+
+
+def _montar_historico_v5(competencia, anteriores, listas, perfil_v5):
+    ultimo = {}
+    for comp, linhas in zip(anteriores, listas):
+        for row in linhas or []:
+            oid = str(row.get("finOpsOpportunityId") or "").strip()
+            if oid:
+                ultimo[oid] = {**row, "competencia": comp}
+    lista = _acesso.filtrar_linhas(perfil_v5, list(ultimo.values()))
+    return {
+        "competencia": competencia,
+        "competencias": anteriores,
+        "total": len(lista),
+        "recomendacoes": lista,
     }
 
 
@@ -756,6 +992,12 @@ def _finops_competencia_fechada_v320(con, competencia):
 def _finops_valor_igual_v404(a, b):
     if a is None or b is None:
         return a is None and b is None
+    # payload_json: compara o conteudo, nao o texto (0 e 0.0 sao o mesmo valor)
+    if isinstance(a, str) and isinstance(b, str) and a[:1] == "{" and b[:1] == "{" and a != b:
+        try:
+            return _finops_json_v196.loads(a) == _finops_json_v196.loads(b)
+        except ValueError:
+            return False
     if isinstance(a, (int, float)) and isinstance(b, (int, float)):
         return float(a) == float(b)
     try:
@@ -765,6 +1007,22 @@ def _finops_valor_igual_v404(a, b):
     except (TypeError, ValueError):
         pass
     return str(a) == str(b)
+
+
+def _finops_payload_igual_v5(antigo, novo):
+    """payload_json igual ignorando o que e so de exibicao (chaves "_..." e as notas de calculo)."""
+
+    def limpo(txt):
+        d = _finops_json_v196.loads(txt or "{}")
+        return {
+            k: v for k, v in d.items()
+            if not str(k).startswith("_") and k not in ("calcNote", "rescaldoNote")
+        }
+
+    try:
+        return limpo(antigo) == limpo(novo)
+    except Exception:
+        return False
 
 
 def _finops_colunas_diferentes_v404(
@@ -805,6 +1063,15 @@ def _finops_colunas_diferentes_v404(
             c for c in cols
             if not _finops_valor_igual_v404(atual[c], novos[c])
         ]
+
+        # V5 planilha oficial: o dash reenvia a competencia inteira com textos de exibicao que ele mesmo
+        # recalcula ao abrir (calc_note, chaves "_..." e notas no payload). So isso nao conta como mudanca.
+        if diff and ctx is not None and ctx.get("so_essencial"):
+            diff = [
+                c for c in diff
+                if c != "calc_note"
+                and not (c == "payload_json" and _finops_payload_igual_v5(atual[c], novos[c]))
+            ]
 
         return diff
 
@@ -943,7 +1210,8 @@ def _finops_montar_valores_v404(
         values["analise"] = _status.normalizar(
             values.get("analise"),
             bool(realizado),
-            ticket
+            ticket,
+            values.get("observacao")
         )
 
     return opportunity_id, values
@@ -1464,6 +1732,7 @@ def _finops_gravar_lote_v403(competencia, rows):
 
     inicio = _finops_time_v404.perf_counter()
     gravadas = 0
+    versao_antes = _versao_comp_v5(competencia)
 
     with conectar() as con:
 
@@ -1508,6 +1777,12 @@ def _finops_gravar_lote_v403(competencia, rows):
             _LOTE_CTX_V404.reset(token_ctx)
 
         con.commit()
+
+    if USE_AZURE_SQL and gravadas:
+        try:
+            _atualizar_cache_linhas_v5(competencia, [i for i, _ in rows], versao_antes)
+        except Exception:
+            pass  # sem atualizacao parcial: a proxima leitura rele a competencia
 
     _finops_logging_v404.getLogger("uvicorn.error").info(
         "[lote] %s: %d recebidas, %d gravadas, %.2fs",
@@ -1573,6 +1848,13 @@ async def finops_estado_completo_lote_v403(
         row = dict(row)
         row["finOpsOpportunityId"] = opportunity_id
         rows.append((opportunity_id, row))
+
+    # responsavel de squad: so as squads dele e so os campos permitidos (resto vem do banco), com as regras
+    perfil_v5 = getattr(request.state, "perfil", None) or {"papel": "admin"}
+    if perfil_v5["papel"] != "admin":
+        rows, erros = _acesso.restringir_lote(perfil_v5, _finops_listar_v404(competencia), rows)
+        if erros:
+            raise HTTPException(status_code=422, detail="; ".join(erros))
 
     try:
 
@@ -1687,7 +1969,8 @@ def _finops_carry_row_v295(
     status = _status.normalizar(
         row.get("analise"),
         bool(row.get("realizado")),
-        row.get("ticket")
+        row.get("ticket"),
+        row.get("observacao")
     )
 
     row[
@@ -1698,12 +1981,10 @@ def _finops_carry_row_v295(
         "competencia"
     ] = destino
 
-    row[
-        "dataRecomendada"
-    ] = (
-        destino
-        + "-01"
-    )
+    # A data recomendada e a original da recomendacao e nunca muda na
+    # heranca entre competencias (regra do processo; ver CHANGELOG).
+    if not str(row.get("dataRecomendada") or "").strip():
+        row["dataRecomendada"] = destino + "-01"
 
     row[
         "dataAtualizacao"
@@ -2088,58 +2369,14 @@ async def finops_substituir_competencia_v196(
 
     try:
 
-        with conectar() as con:
+        from starlette.concurrency import run_in_threadpool
 
-            con.execute(
-                "BEGIN IMMEDIATE"
-            )
-
-            current = con.execute(
-                """
-                SELECT opportunity_id
-                FROM recommendations
-                WHERE competencia = ?
-                """,
-                (competencia,)
-            ).fetchall()
-
-            current_ids = {
-                row["opportunity_id"]
-                for row in current
-            }
-
-            for row in clean_rows:
-
-                _finops_upsert_row_v196(
-                    con,
-                    competencia,
-                    row
-                )
-
-            removed_ids = (
-                current_ids
-                - incoming_ids
-            )
-
-            if removed_ids:
-
-                con.executemany(
-                    """
-                    DELETE FROM recommendations
-                    WHERE competencia = ?
-                      AND opportunity_id = ?
-                    """,
-                    [
-                        (
-                            competencia,
-                            opportunity_id
-                        )
-                        for opportunity_id
-                        in removed_ids
-                    ]
-                )
-
-            con.commit()
+        removidas = await run_in_threadpool(
+            _finops_substituir_v5,
+            competencia,
+            clean_rows,
+            incoming_ids
+        )
 
     except HTTPException:
         raise
@@ -2155,11 +2392,77 @@ async def finops_substituir_competencia_v196(
         "ok": True,
         "competencia": competencia,
         "total": len(clean_rows),
-        "removed": len(
-            current_ids
-            - incoming_ids
-        )
+        "removed": removidas
     }
+
+
+def _finops_substituir_v5(competencia, clean_rows, incoming_ids):
+    """Substitui a competencia inteira numa transacao (planilha oficial).
+
+    V5: le o estado atual de todas as linhas de uma vez e so grava (com auditoria) as que mudaram,
+    como o lote; antes consultava linha por linha e nao auditava status/observacao/datas.
+    Roda fora do loop do servidor (threadpool) para nao travar as outras requisicoes."""
+
+    inicio = _finops_time_v404.perf_counter()
+
+    with conectar() as con:
+
+        con.execute(
+            "BEGIN IMMEDIATE"
+        )
+
+        current_ids = {
+            row["opportunity_id"]
+            for row in con.execute(
+                "SELECT opportunity_id FROM recommendations WHERE competencia = ?",
+                (competencia,)
+            ).fetchall()
+        }
+
+        _ctx_lote = {"pre": {}, "so_essencial": True}
+        token_ctx = _LOTE_CTX_V404.set(_ctx_lote)
+        _ctx_lote["pre"] = _finops_pre_carregar_v404(
+            con,
+            competencia,
+            list(incoming_ids & current_ids)
+        )
+
+        try:
+            for row in clean_rows:
+                _finops_gravar_estado_completo_v403(
+                    con,
+                    competencia,
+                    _finops_id_da_linha_v404(row),
+                    row
+                )
+        finally:
+            gravadas = _ctx_lote.get("gravadas", 0)
+            _LOTE_CTX_V404.reset(token_ctx)
+
+        removed_ids = current_ids - incoming_ids
+
+        if removed_ids:
+            con.executemany(
+                """
+                DELETE FROM recommendations
+                WHERE competencia = ?
+                  AND opportunity_id = ?
+                """,
+                [(competencia, opportunity_id) for opportunity_id in removed_ids]
+            )
+
+        con.commit()
+
+    _finops_logging_v404.getLogger("uvicorn.error").info(
+        "[substituir] %s: %d recebidas, %d gravadas, %d removidas, %.2fs",
+        competencia,
+        len(clean_rows),
+        gravadas,
+        len(removed_ids),
+        _finops_time_v404.perf_counter() - inicio
+    )
+
+    return len(removed_ids)
 
 
 # FIM FINOPS V196

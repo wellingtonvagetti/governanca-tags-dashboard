@@ -8,7 +8,7 @@ import unicodedata
 import threading
 import time
 
-from api.sqldb import USE_AZURE_SQL, conectar_azure, upsert, versao_recomendacoes
+from api.sqldb import USE_AZURE_SQL, conectar_azure, upsert, versao_competencia, versao_recomendacoes
 
 
 BASE_DIR = (
@@ -135,6 +135,7 @@ CATEGORIA_NOME = {
     "RIGHTSIZING": "Rightsizing",
     "DATA_OPTIMIZATION": "Storage & Data Optimization",
     "WASTE": "Waste Elimination",
+    "OFFBOARDING": "Customer Offboarding",
 }
 
 _CATALOGO_POR_CATEGORIA = {
@@ -166,7 +167,6 @@ _CATALOGO_POR_CATEGORIA = {
         "Recommendations to buy Azure Files reserved instances",
         "Recommendations to buy App Service reserved instances",
         "Considering refund reserved instances",
-        "Recommendations for unused/empty App Service plans",
     ),
     "ELASTICITY": (
         "Virtual machine scale sets (including Kubernetes) with overprovisioning disabled",
@@ -190,6 +190,7 @@ _CATALOGO_POR_CATEGORIA = {
     ),
     "WASTE": (
         "Volumes on stopped instances",
+        "Recommendations for unused/empty App Service plans",
         "Virtual Machines stopped but not deallocated",
         "Public IP Addresses without association",
         "Old Snapshots",
@@ -203,6 +204,10 @@ _CATALOGO_POR_CATEGORIA = {
         "Orphaned SQL elastic pools",
         "Azure SQL Databases with no activity",
         "Orphaned Load Balancers",
+    ),
+    # remocao dos recursos de clientes com distrato (contrato encerrado)
+    "OFFBOARDING": (
+        "Decommission resources of terminated customers",
     ),
 }
 
@@ -375,7 +380,7 @@ def _recs_reler(competencia, versao):
 def listar_recomendacoes_cache(competencia):
     """Devolve (registros, veio_do_cache). Sem filtros; so faz sentido no Azure SQL."""
     agora = time.monotonic()
-    versao = versao_recomendacoes()  # lida ANTES da consulta
+    versao = versao_competencia(competencia)  # lida ANTES da consulta
 
     with _RECS_CACHE_LOCK:
         item = _RECS_CACHE.get(competencia)
@@ -399,6 +404,39 @@ def listar_recomendacoes_cache(competencia):
         _RECS_CACHE[competencia] = (versao, time.monotonic(), dados)
 
     return dados, False
+
+
+def atualizar_cache_linhas(competencia, ids, versao_antes):
+    """Depois de gravar um lote, troca no cache so as linhas gravadas em vez de reler a competencia inteira.
+
+    So vale se a unica escrita desde `versao_antes` foi este lote (versao subiu exatamente 1) e o cache estava
+    nessa versao; em qualquer outro caso nao faz nada e a proxima leitura rele tudo (comportamento antigo).
+    """
+    ids = [str(i) for i in ids if str(i).strip()]
+    depois = versao_competencia(competencia)
+    if not ids or len(ids) > 50 or depois != (versao_antes[0], versao_antes[1] + 1):
+        return False
+    with _RECS_CACHE_LOCK:
+        item = _RECS_CACHE.get(competencia)
+    if not item or item[0] != versao_antes:
+        return False
+    novos = {}
+    for oid in ids:
+        reg = buscar_recomendacao(competencia, oid)
+        if reg is None:
+            return False
+        novos[oid] = reg
+    atuais = {str(r.get("finOpsOpportunityId")): r for r in item[2]}
+    if any(oid not in atuais for oid in novos):
+        return False  # linha nova: rele tudo
+    lista = [novos.get(str(r.get("finOpsOpportunityId")), r) for r in item[2]]
+    lista.sort(key=lambda r: (-float(r.get("savingEst") or 0), str(r.get("finOpsOpportunityId") or "")))
+    with _RECS_CACHE_LOCK:
+        atual = _RECS_CACHE.get(competencia)
+        if atual is not item or versao_competencia(competencia) != depois:
+            return False
+        _RECS_CACHE[competencia] = (depois, item[1], lista)
+    return True
 
 
 def buscar_recomendacao(
@@ -538,7 +576,9 @@ def salvar_recomendacoes_lote(
             if item.get("recomendadoPor"):
                 item = dict(item, recomendadoPor=padronizar_recomendado_por(item.get("recomendadoPor")))
 
-            categoria = categoria_do_catalogo(item.get("recommendation"), item.get("categoria"))
+            # Categoria editada na tela (categoriaManual) vence o catalogo.
+            categoria = item.get("categoria") if item.get("categoriaManual") else \
+                categoria_do_catalogo(item.get("recommendation"), item.get("categoria"))
             if categoria != item.get("categoria"):
                 item = dict(item, categoria=categoria)
 

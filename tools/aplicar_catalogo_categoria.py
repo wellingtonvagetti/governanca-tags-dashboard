@@ -32,6 +32,8 @@ def main():
 
     mudar, de_para, ignoradas, fora = [], Counter(), Counter(), Counter()
     for comp, oid, classificacao, atual, payload in linhas:
+        if '"categoriaManual": true' in (payload or ""):
+            continue  # categoria editada na tela: o catalogo nao sobrescreve
         novo = categoria_do_catalogo(classificacao, None)
         if novo is None:
             if comp not in fechadas:

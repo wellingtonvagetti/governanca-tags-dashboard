@@ -45,6 +45,22 @@ footer{max-width:1360px;margin:0 auto;padding:0 32px 26px}
 footer .linha{border-top:1px solid var(--cv-line);padding-top:18px;display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--cv-muted);font-size:12.5px;flex-wrap:wrap}
 footer .l{display:flex;align-items:center;gap:10px}
 footer img{height:20px;display:block}
+/* fundo Evertec e tema escuro, iguais aos dos modulos */
+body{position:relative}
+body:before{content:"";position:fixed;inset:0;background:url('/plataforma/fundo-evertec-claro.svg') center/cover no-repeat;pointer-events:none;z-index:-1}
+body.dark-theme{background:#0d0e13;color:#e8ebef;--cv-text:#e0e3e7;--cv-muted:#aab2bc;--cv-line:#2d3339}
+body.dark-theme:before{background:linear-gradient(rgba(8,9,13,.30),rgba(8,9,13,.45)),url('/plataforma/fundo-evertec-escuro.svg') center/cover no-repeat}
+body.dark-theme .topbar{background:rgba(7,8,12,.97)}
+body.dark-theme .card,body.dark-theme .info{background:rgba(15,16,20,.92);color:#e0e3e7}
+body.dark-theme .card.navy{border-top-color:#4a6a93}
+body.dark-theme .info b{color:#e0e3e7}
+body.dark-theme .btn{background:#1d2a3b}body.dark-theme .btn:hover{background:#26364b}
+body.dark-theme .chip.ok{background:#14231e;color:#5fd197}
+body.dark-theme .ico{filter:brightness(.92)}
+.top-dir{display:flex;align-items:center;gap:12px}
+.header-tool-v5{height:28px;box-sizing:border-box;font:700 10.5px/1 'IBM Plex Sans',system-ui,sans-serif;letter-spacing:.045em;text-transform:uppercase;color:#fff;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.22);border-radius:5px;padding:6px 10px;cursor:pointer}
+.header-tool-v5:hover{background:rgba(255,255,255,.14)}
+.header-tool-v5:focus-visible{outline:2px solid #FF6C0C;outline-offset:2px}
 @media (max-width:900px){.cards{grid-template-columns:1fr}.topbar-inner{flex-wrap:wrap;padding:14px 16px}main{padding:22px 16px}footer{padding:0 16px 22px}.brand-title{font-size:16px}}
 @media (max-width:520px){.brand-mark,.brand-title{display:none}.mod-dd-v5 summary{width:200px}}
 </style>
@@ -52,7 +68,7 @@ footer img{height:20px;display:block}
 <body>
 <header class="topbar"><div class="topbar-inner">
   <div class="brand"><img src="/plataforma/evertec.png" alt="Evertec"><div class="brand-mark"></div><span class="brand-title">Dashboard FinOps</span></div>
-  <div data-mod-seletor="inicio"></div>
+  <div class="top-dir"><button type="button" class="header-tool-v5" id="themeBtnV5" aria-pressed="false">LIGHT</button><div data-mod-seletor="inicio"></div></div>
 </div></header>
 
 <main>
@@ -91,7 +107,21 @@ footer img{height:20px;display:block}
   <span>Dashboard FinOps Evertec</span>
 </div></footer>
 
-<script src="/plataforma/modulos.js?v=20261022-3"></script>
+<script>
+/* tema LIGHT/DARK: mesma preferencia dos modulos (governanca-theme) */
+(function(){
+  var tb=document.getElementById('themeBtnV5');
+  function gravar(v){try{localStorage.setItem('governanca-theme',v)}catch(_){}}
+  function tema(t){var d=t==='dark';document.body.classList.toggle('dark-theme',d);tb.textContent=d?'DARK':'LIGHT';tb.setAttribute('aria-pressed',String(d));tb.title='Tema '+(d?'escuro':'claro')+' ativo; clique para alternar';gravar(d?'dark':'light');}
+  tb.addEventListener('click',function(){tema(document.body.classList.contains('dark-theme')?'light':'dark')});
+  var salvo='light';try{salvo=localStorage.getItem('governanca-theme')||'light'}catch(_){}
+  tema(salvo==='dark'?'dark':'light');
+  // ao voltar para o Inicio (modulos abertos por cima), acompanha o tema escolhido la
+  window.addEventListener('storage',function(e){if(e.key==='governanca-theme')tema(e.newValue==='dark'?'dark':'light');});
+  window.addEventListener('focus',function(){var v='light';try{v=localStorage.getItem('governanca-theme')||'light'}catch(_){}if((v==='dark')!==document.body.classList.contains('dark-theme'))tema(v);});
+})();
+</script>
+<script src="/plataforma/modulos.js?v=20261023-1"></script>
 <script>
 /* responsavel de squad entra direto no modulo de Recomendacoes (os demais modulos sao do FinOps) */
 fetch('/api/acesso/eu',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(p=>{if(p&&p.papel==='squad')location.replace('/recomendacoes');}).catch(()=>{});

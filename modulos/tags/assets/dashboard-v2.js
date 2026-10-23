@@ -443,7 +443,6 @@
   if(vmAuditModule){
   const vmTab=document.createElement('button');vmTab.type='button';vmTab.setAttribute('role','tab');vmTab.dataset.p='vm';vmTab.setAttribute('aria-selected','false');vmTab.textContent='Auditoria de VMs';$('tabs').insertBefore(vmTab,$('tabs').querySelector('[data-p="evo"]'));
   document.querySelector('main>.wrap')?.insertAdjacentHTML('beforeend',`<section class="page vm-audit-page" id="p-vm" hidden>
-    <div class="vm-audit-heading"><div><h1>Auditoria operacional de VMs</h1></div></div>
     <div class="panel vm-filter-panel"><div class="hrow"><div><h2>Filtros de auditoria</h2><p class="sub" id="vmAuditCount"></p></div><div class="advanced-actions"><button class="action-btn" id="vmClear">Limpar</button><button class="action-btn primary" id="vmExport">Exportar resultado CSV</button></div></div><div class="vm-filters"><label>AMBIENTE<select id="vmEnv"><option value="">Todos</option></select></label><label>DISPONIBILIDADE<select id="vmAvailability"><option value="">Todas</option></select></label><label>WAVE<select id="vmWave"><option value="">Todas</option></select></label><label>ENDOFLIFE<select id="vmEol"><option value="">Todos</option></select></label><label>BU<select id="vmBu"><option value="">Todas</option></select></label><label>SUBSCRIPTION<select id="vmSub"><option value="">Todas</option></select></label><label>RESOURCE GROUP<select id="vmRg"><option value="">Todos</option></select></label><label class="vm-search">BUSCAR<input id="vmSearch" type="search" placeholder="VM, ResourceId, RG ou subscription"></label></div></div>
     <div class="grid vm-kpis" id="vmKpis"></div>
     <div class="panel"><div class="hrow"><div><h2>Resultado das regras de auditoria</h2><p class="sub">Uma VM pode aparecer em mais de uma regra; o total geral não a duplica.</p></div><span class="muted">Clique em uma regra para listar as VMs</span></div><div class="vm-rule-grid" id="vmRules"></div></div>
@@ -541,5 +540,5 @@
   loadGovernanceConfig=async function(){await originalLoad();detailOptions();render()};
   refreshGlobalFilterOptions();detailOptions();render();
   fetch('/api/tags/governance-config').then(response=>response.ok?response.json():null).then(config=>{if(config){governanceConfig=config;detailOptions();render()}}).catch(()=>{});
-  requestAnimationFrame(()=>document.body.classList.remove('v2-loading'));
+  requestAnimationFrame(()=>{if(window.evertecTagsLoaderFinish)window.evertecTagsLoaderFinish();else document.body.classList.remove('v2-loading')});
 })();

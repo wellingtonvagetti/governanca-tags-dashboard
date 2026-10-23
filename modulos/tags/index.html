@@ -9,13 +9,91 @@
 .import-fields{display:grid;grid-template-columns:1fr 1fr 180px;gap:16px;margin:16px 0}.import-fields label{display:flex;flex-direction:column;gap:8px;color:var(--ink);font-size:13px}.import-fields input{padding:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;min-width:0;font:inherit;color:var(--ink)}
 .import-action{background:var(--accent);color:#fff;border:1px solid var(--accent);border-radius:6px;padding:11px 16px;font:600 14px var(--f-body);cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.14)}.import-action:hover{filter:brightness(.92)}.import-action:focus-visible{outline:3px solid var(--accent-soft);outline-offset:2px}.import-action:disabled{opacity:.6;cursor:wait}.save-row{display:flex;justify-content:space-between;align-items:center;gap:20px;margin:16px 0 24px;color:var(--muted);font-size:13px}#importMessage{font-weight:500;overflow-wrap:anywhere}
 @media(max-width:900px){.import-fields{grid-template-columns:1fr}.save-row{align-items:flex-start;flex-direction:column}}@media print{.import-box,.save-row{display:none!important}}
-.v2-loading{overflow:hidden}.v2-loading>.top,.v2-loading>main,.v2-loading>.corporate-footer{visibility:hidden}.v2-loading:before{content:"";position:fixed;inset:0;z-index:99998;background:#0d1d31}.v2-loading:after{content:"Preparando Governança de Tags e FinOps…";position:fixed;z-index:99999;left:50%;top:50%;transform:translate(-50%,-50%);padding:54px 24px 0;color:#fff;background:radial-gradient(circle at 50% 18px,#ff5a1f 0 5px,transparent 6px);font:600 14px var(--f-body);letter-spacing:.03em;white-space:nowrap}
+.v2-loading{overflow:hidden}.v2-loading>.top,.v2-loading>main,.v2-loading>.corporate-footer{visibility:hidden}
 </style><link rel="icon" type="image/png" href="/tags/assets/favicon.png?v=20261019-01"><link rel="stylesheet" href="/tags/assets/dashboard-v2.css?v=20261020-03"><link rel="stylesheet" href="/plataforma/modulos.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head><body class="v2-loading">
 <title>Dashboard Executivo — Governança de Tags e FinOps Evertec</title>
+<style id="evertec-tags-loading">
+#evertecTagsLoader{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(5,13,24,.68),rgba(5,13,24,.84)),url('/plataforma/fundo-evertec-escuro.svg') center/cover no-repeat,#081321;color:#edf2f7;font-family:var(--f-body);transition:opacity .42s ease}
+#evertecTagsLoader.sai{opacity:0;pointer-events:none}
+#evertecTagsLoader .loader-card{width:min(456px,calc(100vw - 32px));padding:29px 31px 25px;border:1px solid rgba(255,255,255,.12);border-radius:15px;background:rgba(12,19,31,.88);box-shadow:0 24px 64px rgba(0,0,0,.46);backdrop-filter:blur(7px)}
+#evertecTagsLoader .loader-logo{display:block;width:164px;height:auto;margin:0 0 18px}
+#evertecTagsLoader h2{margin:0 0 5px;color:#fff;font:700 18px/1.25 var(--f-body)}
+#evertecTagsLoader .loader-sub{margin:0 0 18px;color:#b8c5d2;font-size:12px}
+#evertecTagsLoader .loader-track{height:8px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.1)}
+#evertecTagsLoader .loader-bar{height:100%;width:4%;border-radius:inherit;background:linear-gradient(90deg,#f45a1f,#ff9868);box-shadow:0 0 14px rgba(244,90,31,.6);transition:width .42s cubic-bezier(.3,.8,.3,1);position:relative;overflow:hidden}
+#evertecTagsLoader .loader-bar:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.38),transparent);animation:tagsLoaderShine 1.25s linear infinite}
+@keyframes tagsLoaderShine{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+#evertecTagsLoader .loader-progress{display:flex;justify-content:space-between;margin:8px 0 14px;color:#b8c5d2;font:11px var(--f-body)}
+#evertecTagsLoader .loader-progress b{color:#fff;font:700 11px var(--f-mono)}
+#evertecTagsLoader ul{list-style:none;margin:0;padding:0;font-size:12px}
+#evertecTagsLoader li{display:flex;align-items:center;gap:9px;padding:4px 0;color:#8695a6;transition:color .25s}
+#evertecTagsLoader li i{width:14px;height:14px;box-sizing:border-box;flex:0 0 auto;border:2px solid #4c5b6c;border-radius:50%;position:relative}
+#evertecTagsLoader li.on{color:#eff5fa}#evertecTagsLoader li.on i{border-color:#f45a1f;border-top-color:transparent;animation:tagsLoaderSpin .8s linear infinite}
+#evertecTagsLoader li.ok{color:#d7e1eb}#evertecTagsLoader li.ok i{border:0;background:#f45a1f}
+#evertecTagsLoader li.ok i:after{content:"";position:absolute;left:5px;top:2px;width:3px;height:7px;border:solid white;border-width:0 2px 2px 0;transform:rotate(45deg)}
+@keyframes tagsLoaderSpin{to{transform:rotate(360deg)}}
+#evertecTagsLoader .loader-warning{display:none;margin:12px 0 0;color:#ffc19f;font-size:11px}
+#evertecTagsTopLoad{position:fixed;top:0;left:0;z-index:2147483646;width:0;height:3px;opacity:0;pointer-events:none;background:linear-gradient(90deg,#f45a1f,#ff9868);box-shadow:0 0 10px rgba(244,90,31,.65);transition:width .38s ease,opacity .35s ease}
+#evertecTagsTopLoad.on{opacity:1}
+</style>
+<script id="evertec-tags-loading-script">
+(function(){
+  var vm=document.body.dataset.module==='auditoria-vms';
+  var cacheKey='evertec-tags-loader-v1:'+(vm?'vm':'governanca');
+  try{if(sessionStorage.getItem(cacheKey)==='1'){document.body.classList.remove('v2-loading');return;}}catch(_){}
+  var etapas=vm?[['pagina','Página'],['fotografia','Fotografia de Governança'],['parametros','Regras de auditoria de VMs'],['historico','Matrizes e detalhamento']]:[['pagina','Página'],['fotografia','Fotografia de Governança'],['parametros','Mapa BU × CC × CCOWNER'],['historico','Histórico de fotografias']];
+  var feito={},pedido={},pendentes=0,pronto=false,renderizado=false,t0=Date.now(),ultimo=t0;
+  var box=document.createElement('div');box.id='evertecTagsLoader';
+  box.innerHTML='<div class="loader-card"><img class="loader-logo" src="/tags/assets/evertec-logo-white.png" alt="Evertec"><h2>Dashboard FinOps · '+(vm?'Auditoria de Tags de VMs':'Governança de Tags')+'</h2><p class="loader-sub">Preparando os dados para você</p><div class="loader-track"><div class="loader-bar"></div></div><div class="loader-progress"><span class="loader-stage">Iniciando…</span><b class="loader-number">0%</b></div><ul>'+etapas.map(function(e){return '<li data-step="'+e[0]+'"><i></i>'+e[1]+'</li>';}).join('')+'</ul><p class="loader-warning">Está demorando mais que o normal. A tela será exibida assim que os dados estiverem prontos.</p></div>';
+  document.documentElement.appendChild(box);
+  var top=document.createElement('div');top.id='evertecTagsTopLoad';document.documentElement.appendChild(top);
+  function paint(){
+    if(pronto)return;
+    var vistos=etapas.filter(function(e){return e[0]==='pagina'||pedido[e[0]]||feito[e[0]];});
+    var concluidas=etapas.filter(function(e){return feito[e[0]];}).length;
+    var percentual=Math.min(96,Math.round(4+92*concluidas/Math.max(vistos.length,4)));
+    box.querySelector('.loader-bar').style.width=percentual+'%';
+    box.querySelector('.loader-number').textContent=percentual+'%';
+    var atual=etapas.filter(function(e){return pedido[e[0]]&&!feito[e[0]];})[0];
+    box.querySelector('.loader-stage').textContent=atual?atual[1]+'…':(renderizado?'Montando os painéis…':'Carregando página…');
+    [].forEach.call(box.querySelectorAll('li'),function(li){var step=li.dataset.step;li.className=feito[step]?'ok':(pedido[step]||step==='pagina'?'on':'');});
+  }
+  function tipo(url){
+    var u=String(url||'');
+    if(/\/api\/tags\/snapshots/.test(u))return 'historico';
+    if(/\/api\/tags\/governance-config/.test(u))return 'parametros';
+    return '';
+  }
+  function fechar(){
+    if(pronto)return;pronto=true;
+    etapas.forEach(function(e){feito[e[0]]=true;});
+    box.querySelector('.loader-bar').style.width='100%';box.querySelector('.loader-number').textContent='100%';box.querySelector('.loader-stage').textContent='Pronto';
+    [].forEach.call(box.querySelectorAll('li'),function(li){li.className='ok';});
+    document.body.classList.remove('v2-loading');
+    try{sessionStorage.setItem(cacheKey,'1');}catch(_){}
+    setTimeout(function(){box.classList.add('sai');setTimeout(function(){box.remove();},460);},260);
+  }
+  function tentaFechar(){if(renderizado&&pendentes===0&&Date.now()-ultimo>300)fechar();}
+  var fetchBase=window.fetch.bind(window);
+  window.fetch=function(input,init){
+    var url=typeof input==='string'?input:(input&&input.url)||'';
+    var method=String((init&&init.method)||(input&&input.method)||'GET').toUpperCase();
+    var step=method==='GET'?tipo(url):'';
+    if(!step)return fetchBase(input,init);
+    pedido[step]=true;pendentes++;ultimo=Date.now();paint();
+    function fim(){feito[step]=true;pendentes=Math.max(0,pendentes-1);ultimo=Date.now();paint();setTimeout(tentaFechar,340);}
+    return fetchBase(input,init).then(function(response){fim();return response;},function(error){fim();throw error;});
+  };
+  window.evertecTagsLoaderFinish=function(){feito.pagina=true;renderizado=true;ultimo=Date.now();paint();setTimeout(tentaFechar,420);};
+  setTimeout(function(){if(!pronto)box.querySelector('.loader-warning').style.display='block';},12000);
+  setTimeout(fechar,30000);
+  paint();
+})();
+</script>
 
 
 <style>

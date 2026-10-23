@@ -318,7 +318,7 @@
       ['solution.svg','PRODUTO classificado',pct(produto.cl,produto.n),`${fmt(produto.cl)} de ${fmt(produto.n)}`],
       ['dashboard.svg','Cobertura FOLIO',D.meta?.folioCollected?pct(folio.fill,folio.n):'—',D.meta?.folioCollected?`${fmt(folio.fill)} de ${fmt(folio.n)} CAPEX=SIM`:'FOLIO não coletado']
     ];
-    const inventoryScope=fullInventory().filter(r=>!globalFilters.type||r.type===globalFilters.type),complements=inventoryClasses.slice(1).map(classification=>[classification,inventoryScope.filter(r=>r.classification===classification).length]).filter(([,n])=>n>0);
+    const inventoryScope=fullInventory().filter(r=>!globalFilters.type.length||globalFilters.type.includes(r.type)),complements=inventoryClasses.slice(1).map(classification=>[classification,inventoryScope.filter(r=>r.classification===classification).length]).filter(([,n])=>n>0);
     $('execKpisV2').innerHTML=cards.map((c,index)=>`<div class="panel kpi c3"><div class="kpi-head"><div><div class="eyebrow">${c[1]}</div><div class="v">${typeof c[2]==='number'?fmt(c[2]):c[2]}</div></div>${icon(c[0])}</div><div class="d">${c[3]}</div>${index===4&&complements.length?`<div class="inventory-card-links">${complements.map(([classification,n])=>`<button type="button" data-inventory-class="${esc(classification)}">${fmt(n)} ${esc(classification.toLowerCase())}</button>`).join('')}</div><small class="inventory-filter-note">Complementos usam Tipo; filtros de Tags não ocultam excluídos.</small>`:''}</div>`).join('');
     $('stackTagsV2').innerHTML=TAGS.map(t=>stackRow(t,ix)).join('');
     const tm=new Map();for(const i of ix){const t=DI.type[R.t[i]];tm.set(t,(tm.get(t)||0)+1)}const top=[...tm].sort((a,b)=>b[1]-a[1]).slice(0,10);

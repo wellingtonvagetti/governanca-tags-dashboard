@@ -16,7 +16,11 @@ from api import status as st  # noqa: E402
 class TestNormalizar(unittest.TestCase):
     def test_regra_do_aprovado(self):
         self.assertEqual(st.normalizar("APROVADO", True, ""), st.CAPTURADO)
-        self.assertEqual(st.normalizar("APROVADO", False, "CHG123"), st.IMPLEMENTACAO)
+        self.assertEqual(st.normalizar("APROVADO", False, "CHG123"), st.PLANEJADA)
+        self.assertEqual(st.normalizar("APROVADO", False, "CHG123", "Chamado Dedalus - SR-437072"), st.IMPLEMENTACAO)
+        self.assertEqual(st.normalizar("APROVADO", True, "CHG123", "Chamado Dedalus - SR-437072"), st.CAPTURADO)
+        self.assertEqual(st.normalizar("APROVADO", False, "", "Dedalus responsável pela execução, ticket aberto SR-453663"), st.IMPLEMENTACAO)
+        self.assertEqual(st.normalizar("APROVADO", False, "", "aguardando janela"), st.PLANEJADA)
         self.assertEqual(st.normalizar("APROVADO", False, "  "), st.PLANEJADA)
         self.assertEqual(st.normalizar("aprovado", 1, "CHG123"), st.CAPTURADO)
 
@@ -32,7 +36,7 @@ class TestNormalizar(unittest.TestCase):
         self.assertEqual(st.normalizar(st.PLANEJADA, True), st.CAPTURADO)
         self.assertEqual(st.normalizar(st.IMPLEMENTACAO, True), st.CAPTURADO)
         self.assertEqual(st.normalizar(st.CAPTURADO, False, ""), st.PLANEJADA)
-        self.assertEqual(st.normalizar(st.CAPTURADO, False, "CHG1"), st.IMPLEMENTACAO)
+        self.assertEqual(st.normalizar(st.CAPTURADO, False, "CHG1"), st.PLANEJADA)
         self.assertEqual(st.normalizar(st.CAPTURADO, True), st.CAPTURADO)
 
     def test_idempotente(self):
@@ -124,7 +128,7 @@ class TestConversaoDoBanco(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         novo, payload = self.lidos()
         self.assertEqual(novo["A1"], st.CAPTURADO)
-        self.assertEqual(novo["A2"], st.IMPLEMENTACAO)
+        self.assertEqual(novo["A2"], st.PLANEJADA)
         self.assertEqual(novo["A3"], st.PLANEJADA)
         self.assertEqual(novo["A4"], st.VALIDACAO)
         self.assertEqual(novo["A5"], st.ADIADA)
